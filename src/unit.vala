@@ -57,7 +57,7 @@ namespace Varallel {
             }
         }
 
-        public void run () throws SpawnError {
+        public int run () throws SpawnError {
             Process.spawn_sync (
                 null,
                 commands,
@@ -67,6 +67,7 @@ namespace Varallel {
                 out subprcs_output,
                 out subprcs_error,
                 out subprcs_status);
+            return subprcs_status;
         }
     }
 }

@@ -58,10 +58,13 @@ namespace Varallel {
             pool = new ThreadPool<Unit>.with_owned_data (
                 (subprsc) => {
                     try {
-                        subprsc.run ();
+                        var status = subprsc.run ();
                         if (!hide_sub_output) {
                             printerr (subprsc.error);
                             print (subprsc.output);
+                        }
+                        if (status != 0) {
+                            printerr ("Command `%s' failed with status: %d\n", subprsc.command_line, status);
                         }
                     } catch (SpawnError e) {
                         printerr ("SpawnError: %s\n", e.message);
