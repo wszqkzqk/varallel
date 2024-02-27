@@ -218,16 +218,16 @@ namespace Varallel {
                     this.shell = shell;
                 }
             } else {
-                // if shell is null and the system is windows, use cmd.exe
+                // if shell is null and the system is windows, try to use cmd.exe
                 if (IS_WINDOWS) {
-                    this.shell = "cmd.exe";
+                    this.shell = Environment.find_program_in_path ("cmd.exe");
                     this.shell_args = "/c";
                 } else {
                     // if shell is null and the system is not windows, use the SHELL environment variable
                     this.shell = Environment.get_variable("SHELL");
                     // if the SHELL environment variable is not set, use /bin/sh
                     if (this.shell == null) {
-                        this.shell = "/bin/sh";
+                        this.shell = Environment.find_program_in_path ("sh");
                     }
                 }
             }
