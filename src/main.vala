@@ -157,11 +157,13 @@ namespace Varallel {
   {/}                         Basename of input line
   {//}                        Dirname of input line
   {/.}                        Basename of input line without extension
-  {#}                         Job index");
+  {#}                         Job index
+  
+For more information, or to report bugs, please visit:
+    <https://github.com/wszqkzqk/varallel>");
     /*
   {3} {2.} {4/} {1/.} etc.    Positional replacement strings
     */
-            opt_context.set_summary ("For more information, or to report bugs, please visit:\n  <https://github.com/wszqkzqk/varallel>");
             opt_context.add_main_entries (options, null);
             try {
                 opt_context.parse (ref args);
