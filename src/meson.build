@@ -4,12 +4,9 @@ version_file = vcs_tag(
     output: 'version.vala'
 )
 
-lib_sources = [
+executable_sources = [
   'unit.vala',
   'parallelmanager.vala',
-]
-
-executable_sources = [
   'main.vala',
   version_file
 ]
@@ -17,16 +14,11 @@ executable_sources = [
 basic_deps = [
   glib,
   gobject,
-  gio
+  gio,
+  gmodule
 ]
-
-lib = library('varallel', lib_sources,
-  dependencies: basic_deps,
-  install: true,
-)
 
 executable('varallel', executable_sources,
   dependencies: basic_deps,
   install: true,
-  link_with: lib,
 )

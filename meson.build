@@ -7,5 +7,6 @@ project('varallel', ['c', 'vala'],
 glib = dependency('glib-2.0')
 gobject = dependency('gobject-2.0')
 gio = dependency('gio-2.0')
+gmodule = dependency('gmodule-2.0')
 
 subdir('src')

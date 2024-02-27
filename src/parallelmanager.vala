@@ -2,21 +2,21 @@
  *
  * Copyright 2024 Zhou Qiankang <wszqkzqk@qq.com>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * SPDX-License-Identifier: GPL-2.0-or-later
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 namespace Varallel {
@@ -32,9 +32,9 @@ namespace Varallel {
         int jobs = 0;
         string? shell = null;
         string shell_args = "-c";
-        uint failed = 0;
-        uint finished = 0;
         static Regex slot_in_command = /\{(\/|\.|\/\.|\/\/|#)?\}/;
+        public uint finished_jobs {get; set; default = 0;}
+        public uint failed_jobs {get; set; default = 0;}
         
         public ParallelManager (string original_command,
                                 string[] original_args,
@@ -61,14 +61,11 @@ namespace Varallel {
                 (subprsc) => {
                     try {
                         subprsc.run ();
-                        finished += 1;
                         if (!hide_sub_output) {
-                            print (subprsc.output);
                             printerr (subprsc.error);
+                            print (subprsc.output);
                         }
-                        print ("Total: %u; Finished: %u; Failed: %u\n", original_args.length, finished, failed);
                     } catch (SpawnError e) {
-                        failed += 1;
                         printerr ("SpawnError: %s\n", e.message);
                     }
                 }, 
@@ -79,7 +76,7 @@ namespace Varallel {
             }
         }
 
-        public inline void run () {
+        public void run () {
             /**
              * run:
              *
@@ -88,17 +85,14 @@ namespace Varallel {
             for (uint i = 0; i < original_args.length; i += 1) {
                 var command = process_single_command (original_command, original_args[i], i);
                 if (command == null) {
-                    failed += 1;
                     printerr ("Failed to process command: %s\n", original_command);
                     continue;
                 }
                 try {
                     pool.add (new Unit (command, shell, shell_args));
                 } catch (ThreadError e) {
-                    failed += 1;
                     printerr ("ThreadError: %s\n", e.message);
                 } catch (ShellError e) {
-                    failed += 1;
                     printerr ("ShellError: %s\n", e.message);
                 }
             }
@@ -199,6 +193,11 @@ namespace Varallel {
                         return false;
                     }
                 );
+                // Consider the case that the command is not changed
+                // Put the argument at the end of the command
+                if (ret == command) {
+                    ret = command + " " + single_arg;
+                }
                 return ret;
             } catch (RegexError e) {
                 printerr ("RegexError: %s\n", e.message);
@@ -206,16 +205,17 @@ namespace Varallel {
             }
         }
 
-        inline void choose_shell (string shell) {
+        inline void choose_shell (string? shell) {
             if (shell != null) {
                 // if shell is not null, use it
-                this.shell = shell;
                 if (IS_WINDOWS) {
                     this.shell = shell.ascii_down ();
                     // if the shell is cmd or cmd.exe, use /c as the shell_args
                     if (this.shell.has_suffix ("cmd") || this.shell.has_suffix ("cmd.exe")) {
                         this.shell_args = "/c";
                     }
+                } else {
+                    this.shell = shell;
                 }
             } else {
                 // if shell is null and the system is windows, use cmd.exe
