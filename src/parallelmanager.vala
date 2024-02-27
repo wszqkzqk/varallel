@@ -64,7 +64,7 @@ namespace Varallel {
                             print (subprsc.output);
                         }
                         if (status != 0) {
-                            printerr ("Command `%s' failed with status: %d\n", subprsc.command_line, status);
+                            printerr ("Command `%s` failed with status: %d\n", subprsc.command_line, status);
                         }
                     } catch (SpawnError e) {
                         printerr ("SpawnError: %s\n", e.message);
