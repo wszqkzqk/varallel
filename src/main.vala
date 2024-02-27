@@ -84,9 +84,8 @@ namespace Varallel {
                 while ((line = stdin.read_line ()) != null) {
                     array.add (line);
                 }
-            }
-            // ::: is used to separate command and args
-            if (args[2] == ":::") {
+            } else if (args[2] == ":::") {
+                // ::: is used to separate command and args
                 if (args.length <= 3) {
                     printerr ("OptionError: no args specified arter `:::'\n\n");
                     return false;
