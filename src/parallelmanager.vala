@@ -33,8 +33,6 @@ namespace Varallel {
         string? shell = null;
         string shell_args = "-c";
         static Regex slot_in_command = /\{(\/|\.|\/\.|\/\/|#)?\}/;
-        public uint finished_jobs {get; set; default = 0;}
-        public uint failed_jobs {get; set; default = 0;}
         
         public ParallelManager (string original_command,
                                 string[] original_args,
