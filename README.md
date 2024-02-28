@@ -105,5 +105,5 @@ varallel echo ::: 1 2 3 4 5 6
 Also, `Varallel` can read the arguement lists from files.
 
 ```bash
-varallel echo :::: file.txt
+varallel echo :::: example.txt file*.txt
 ```
