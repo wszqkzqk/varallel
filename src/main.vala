@@ -169,18 +169,18 @@ For more information, or to report bugs, please visit:
                 opt_context.parse (ref args);
             } catch (OptionError e) {
                 printerr ("OptionError: %s\n\n", e.message);
-                print (opt_context.get_help (true, null));
+                printerr (opt_context.get_help (true, null));
                 return 1;
             }
 
             if (show_version) {
-                print ("Vala Parallel v%s\n", VERSION);
+                printerr ("Varallel v%s\n", VERSION);
                 return 0;
             }
 
             if (args.length <= 1) {
                 printerr ("OptionError: no command specified\n\n");
-                print (opt_context.get_help (true, null));
+                printerr (opt_context.get_help (true, null));
                 return 1;
             }
 
@@ -188,15 +188,15 @@ For more information, or to report bugs, please visit:
             string[]? args_list;
             if (!parse_nonoption_args (ref args, out command, out args_list)) {
                 printerr ("OptionError: invalid command or args\n\n");
-                print (opt_context.get_help (true, null));
+                printerr (opt_context.get_help (true, null));
                 return 1;
             } else if (command == null || args_list == null) {
                 printerr ("OptionError: invalid command or args\n\n");
-                print (opt_context.get_help (true, null));
+                printerr (opt_context.get_help (true, null));
                 return 1;
             } else if (args_list.length == 0) {
                 printerr ("OptionError: no input specified\n\n");
-                print (opt_context.get_help (true, null));
+                printerr (opt_context.get_help (true, null));
                 return 1;
             }
 

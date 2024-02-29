@@ -61,7 +61,7 @@ namespace Varallel {
                         var status = subprsc.run ();
                         if (!hide_sub_output) {
                             printerr (subprsc.error);
-                            print (subprsc.output);
+                            printerr (subprsc.output);
                         }
                         if (status != 0) {
                             printerr ("Command `%s` failed with status: %d\n", subprsc.command_line, status);
