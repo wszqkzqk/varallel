@@ -36,6 +36,7 @@ namespace Varallel {
         ProgressBar progress_bar;
         public bool show_progress_bar = false;
         Mutex mutex = Mutex ();
+        bool hide_sub_output = false;
         
         public ParallelManager (string original_command,
                                 string[] original_args,
@@ -43,7 +44,7 @@ namespace Varallel {
                                 string? shell = null,
                                 bool use_shell = true,
                                 bool hide_sub_output = false,
-                                bool show_progress_bar = false) throws ThreadError {
+                                bool show_progress_bar = false) {
             /**
              * ParallelManager:
              * @original_command: the command to be executed
@@ -60,28 +61,10 @@ namespace Varallel {
             // if jobs is 0, use the number of processors
             this.jobs = (jobs == 0) ? (int) get_num_processors () : jobs;
             this.show_progress_bar = show_progress_bar;
+            this.hide_sub_output = hide_sub_output;
             if (show_progress_bar) {
                 progress_bar = new ProgressBar (original_args.length);
             }
-            pool = new ThreadPool<Unit>.with_owned_data (
-                (subprsc) => {
-                    try {
-                        var status = subprsc.run ();
-                        if (!hide_sub_output) {
-                            printerr ("%s", subprsc.error);
-                            print ("%s", subprsc.output);
-                        }
-                        if (status != 0) {
-                            printerr ("Command `%s` failed with status: %d\n", subprsc.command_line, status);
-                        }
-                        thread_safe_show_progress_bar ();
-                    } catch (SpawnError e) {
-                        printerr ("SpawnError: %s\n", e.message);
-                        thread_safe_show_progress_bar ();
-                    }
-                }, 
-                this.jobs, 
-                false);
             if (use_shell) {
                 choose_shell (shell);
             }
@@ -95,12 +78,31 @@ namespace Varallel {
             }
         }
 
-        public void run () {
+        public void run () throws ThreadError {
             /**
              * run:
              *
              * Run the commands in parallel.
              */
+            pool = new ThreadPool<Unit>.with_owned_data (
+            (subprsc) => {
+                try {
+                    var status = subprsc.run ();
+                    if (!hide_sub_output) {
+                        printerr ("\n%s", subprsc.error);
+                        print ("%s", subprsc.output);
+                    }
+                    if (status != 0) {
+                        printerr ("Command `%s` failed with status: %d\n", subprsc.command_line, status);
+                    }
+                    thread_safe_show_progress_bar ();
+                } catch (SpawnError e) {
+                    printerr ("SpawnError: %s\n", e.message);
+                    thread_safe_show_progress_bar ();
+                }
+            }, 
+            this.jobs, 
+            false);
             for (uint i = 0; i < original_args.length; i += 1) {
                 var command = process_single_command (original_command, original_args[i], i);
                 if (command == null) {

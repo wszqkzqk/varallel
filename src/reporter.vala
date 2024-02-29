@@ -29,7 +29,10 @@ namespace Varallel {
         char fill_char;
         char empty_char;
     
-        public ProgressBar (int total_steps, char fill_char = '#', char empty_char = '-', string title = "Progress") {
+        public ProgressBar (int total_steps,
+                            char fill_char = '#',
+                            char empty_char = '-',
+                            string title = "Progress") {
             this.title = title;
             this.total_steps = total_steps;
             this.current_step = 0;
@@ -49,7 +52,8 @@ namespace Varallel {
             // The minimal width of console to show progressbar is (title.length + ": [] 100.00%".length + 5)
             // = title.length + 17 + 5
             // only the the effictive length of progressbar is no less than 5, the progressbar will be shown
-            var builder = new StringBuilder (title);
+            var builder = new StringBuilder ("\r");
+            builder.append (title);
             int bar_length = get_console_width () - 17;
             if (bar_length >= 5) {
                 builder.append (": [");
@@ -60,9 +64,9 @@ namespace Varallel {
                 for (int i = 0; i < bar_length - fill_length; i++) {
                     builder.append_c (empty_char);
                 }
-                builder.append ("] %.2f%%\r".printf (percentage));
+                builder.append ("] %.2f%%".printf (percentage));
             } else {
-                builder.append (": %.2f%%\r".printf (percentage));
+                builder.append (": %.2f%%".printf (percentage));
             }
             printerr(builder.str);
         }
