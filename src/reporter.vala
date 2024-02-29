@@ -52,8 +52,7 @@ namespace Varallel {
             // The minimal width of console to show progressbar is (title.length + ": [] 100.00%".length + 5)
             // = title.length + 17 + 5
             // only the the effictive length of progressbar is no less than 5, the progressbar will be shown
-            var builder = new StringBuilder ("\r");
-            builder.append (title);
+            var builder = new StringBuilder (title);
             int bar_length = get_console_width () - 17;
             if (bar_length >= 5) {
                 builder.append (": [");
@@ -64,9 +63,9 @@ namespace Varallel {
                 for (int i = 0; i < bar_length - fill_length; i++) {
                     builder.append_c (empty_char);
                 }
-                builder.append ("] %.2f%%".printf (percentage));
+                builder.append ("] %.2f%%\r".printf (percentage));
             } else {
-                builder.append (": %.2f%%".printf (percentage));
+                builder.append (": %.2f%%\r".printf (percentage));
             }
             printerr(builder.str);
         }

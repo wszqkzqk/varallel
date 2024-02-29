@@ -217,7 +217,7 @@ For more information, or to report bugs, please visit:
                 return 1;
             }
 
-            printerr ("\nAll jobs completed!\n");
+            printerr ((bar) ? "\nAll jobs completed!\n" : "All jobs completed!\n");
             return 0;
         }
     }

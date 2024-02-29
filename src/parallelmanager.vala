@@ -89,7 +89,7 @@ namespace Varallel {
                 try {
                     var status = subprsc.run ();
                     if (!hide_sub_output) {
-                        printerr ("\n%s", subprsc.error);
+                        printerr ("%s", subprsc.error);
                         print ("%s", subprsc.output);
                     }
                     if (status != 0) {
