@@ -88,7 +88,7 @@ For more information, or to report bugs, please visit:
 
 `Varallel` can read the arguement lists from pipes, files or command line.
 
-#### Use pipe
+#### Use pipes
 
 `Varallel` can read the arguement lists from pipes.
 
@@ -98,15 +98,16 @@ seq 1 6 | varallel echo
 varallel echo < <(seq 3 7)
 ```
 
-#### Use command line
+#### Use command lines
 
 `Varallel` can read the arguement lists from the command line.
 
 ```bash
 varallel echo ::: 1 2 3 4 5 6
+varallel 'echo "{.} {/} {#} {//}"' ::: /home/wszqkzqk ./README.md ~/Pictures/Arch_Linux_logo.svg
 ```
 
-#### Use file
+#### Use files
 
 Also, `Varallel` can read the arguement lists from files.
 
