@@ -214,8 +214,10 @@ For more information, or to report bugs, please visit:
                 manager.run ();
             } catch (ThreadError e) {
                 printerr ("ThreadError: %s\n", e.message);
+                return 1;
             }
 
+            printerr ("\nAll jobs completed!\n");
             return 0;
         }
     }
