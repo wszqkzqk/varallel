@@ -40,14 +40,18 @@ Application Options:
   -r, --colsep=EXPRESSION     Regex to split the arguement
   --hide                      Hide subcommands output
   -s, --shell=SHELL           Manually set SHELL to run the command, set 'n' to disable to use any shell
+  -b, --bar                   Show progress bar
 
 Replacements in cammand:
   {}                          Input arguement
   {.}                         Input arguement without extension
-  {/}                         Basename of Input arguement
-  {//}                        Dirname of Input arguement
-  {/.}                        Basename of Input arguement without extension
+  {/}                         Basename of input line
+  {//}                        Dirname of input line
+  {/.}                        Basename of input line without extension
   {#}                         Job index
+  
+For more information, or to report bugs, please visit:
+    <https://github.com/wszqkzqk/varallel>
 ```
 
 #### Explanation
@@ -77,6 +81,8 @@ Replacements in cammand:
   * Hide subcommands output.
 * `-s=SHELL` `--shell=SHELL`
   * Manually set SHELL to run the command, set 'n' to disable to use any shell, and the subcommands will be spawned directly.
+* `-b` `--bar`
+  * Show progress bar.
 
 ### Examples
 
