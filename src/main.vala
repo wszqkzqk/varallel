@@ -27,12 +27,14 @@ namespace Varallel {
         static string? colsep_regex_str = null;
         static bool hide_sub_output = false;
         static string? shell = null;
+        static bool bar = false;
         const OptionEntry[] options = {
             { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref show_version, "Display version number", null },
             { "jobs", 'j', OptionFlags.NONE, OptionArg.INT, ref jobs, "Run n jobs in parallel", "n" },
             { "colsep", 'r', OptionFlags.NONE, OptionArg.STRING, ref colsep_regex_str, "Regex to split the arguement", "EXPRESSION" },
             { "hide", '\0', OptionFlags.NONE, OptionArg.NONE, ref hide_sub_output, "Hide subcommands output", null },
             { "shell", 's', OptionFlags.NONE, OptionArg.STRING, ref shell, "Manually set SHELL to run the command, set 'n' to disable to use any shell", "SHELL" },
+            { "bar", 'b', OptionFlags.NONE, OptionArg.NONE, ref bar, "Show progress bar", null},
             { null }
         };
 
@@ -207,7 +209,8 @@ For more information, or to report bugs, please visit:
                     jobs,
                     shell,
                     shell != "n",
-                    hide_sub_output);
+                    hide_sub_output,
+                    bar);
                 manager.run ();
             } catch (ThreadError e) {
                 printerr ("ThreadError: %s\n", e.message);

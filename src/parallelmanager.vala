@@ -33,13 +33,17 @@ namespace Varallel {
         string? shell = null;
         string shell_args = "-c";
         static Regex slot_in_command = /\{(\/|\.|\/\.|\/\/|#)?\}/;
+        ProgressBar progress_bar;
+        public bool show_progress_bar = false;
+        Mutex mutex = Mutex ();
         
         public ParallelManager (string original_command,
                                 string[] original_args,
                                 int jobs = 0,
                                 string? shell = null,
                                 bool use_shell = true,
-                                bool hide_sub_output = false) throws ThreadError {
+                                bool hide_sub_output = false,
+                                bool show_progress_bar = false) throws ThreadError {
             /**
              * ParallelManager:
              * @original_command: the command to be executed
@@ -55,6 +59,10 @@ namespace Varallel {
             this.original_command = original_command;
             // if jobs is 0, use the number of processors
             this.jobs = (jobs == 0) ? (int) get_num_processors () : jobs;
+            this.show_progress_bar = show_progress_bar;
+            if (show_progress_bar) {
+                progress_bar = new ProgressBar (original_args.length);
+            }
             pool = new ThreadPool<Unit>.with_owned_data (
                 (subprsc) => {
                     try {
@@ -66,14 +74,24 @@ namespace Varallel {
                         if (status != 0) {
                             printerr ("Command `%s` failed with status: %d\n", subprsc.command_line, status);
                         }
+                        thread_safe_show_progress_bar ();
                     } catch (SpawnError e) {
                         printerr ("SpawnError: %s\n", e.message);
+                        thread_safe_show_progress_bar ();
                     }
                 }, 
                 this.jobs, 
                 false);
             if (use_shell) {
                 choose_shell (shell);
+            }
+        }
+
+        inline void thread_safe_show_progress_bar () {
+            if (show_progress_bar) {
+                mutex.lock ();
+                progress_bar.update ();
+                mutex.unlock ();
             }
         }
 
@@ -87,14 +105,17 @@ namespace Varallel {
                 var command = process_single_command (original_command, original_args[i], i);
                 if (command == null) {
                     printerr ("Failed to process command: %s\n", original_command);
+                    thread_safe_show_progress_bar ();
                     continue;
                 }
                 try {
                     pool.add (new Unit (command, shell, shell_args));
                 } catch (ThreadError e) {
                     printerr ("ThreadError: %s\n", e.message);
+                    thread_safe_show_progress_bar ();
                 } catch (ShellError e) {
                     printerr ("ShellError: %s\n", e.message);
+                    thread_safe_show_progress_bar ();
                 }
             }
         }        

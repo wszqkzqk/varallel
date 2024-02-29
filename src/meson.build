@@ -8,10 +8,12 @@ executable_sources = [
   'unit.vala',
   'parallelmanager.vala',
   'main.vala',
+  'reporter.vala',
   version_file
 ]
 
 basic_deps = [
+  math,
   glib,
   gobject,
   gio,
