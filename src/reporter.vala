@@ -59,7 +59,7 @@ namespace Varallel {
             const string ANSI_COLOR_INVERT = "\x1b[7m";
             const string ANSI_COLOR_END = "\x1b[0m";
 
-            public inline string to_string () {
+            public inline unowned string to_string () {
                 switch (this) {
                 case EscapeCode.END:
                     return ANSI_COLOR_END;
@@ -124,8 +124,8 @@ namespace Varallel {
                     in_tty = isatty (stderr.fileno ());
                 }
                 if (in_tty) {
-                    printerr ("Command %s`%s'%s failed with status: %s%d%s\n",
-                                EscapeCode.BOLD.to_string (),
+                    printerr ("Command `%s%s%s' failed with status: %s%d%s\n",
+                                EscapeCode.BOLD.to_string () + EscapeCode.YELLOW.to_string (),
                                 command,
                                 EscapeCode.END.to_string (),
                                 EscapeCode.RED.to_string () + EscapeCode.BOLD.to_string (),
@@ -167,7 +167,7 @@ namespace Varallel {
             print_progress ();
             return current_step;
         }
-    
+
         public void print_progress () {
             // The minimal width of console to show progressbar is (title.length + ": [] 100.00%".length + 5)
             // = title.length + 17 + 5
@@ -183,9 +183,9 @@ namespace Varallel {
                 for (int i = 0; i < bar_length - fill_length; i++) {
                     builder.append_c (empty_char);
                 }
-                builder.append ("] %.2f%%\r".printf (percentage));
+                builder.append_printf ("] %6.2f%%\r", percentage);
             } else {
-                builder.append (": %.2f%%\r".printf (percentage));
+                builder.append_printf (": %6.2f%%\r", percentage);
             }
             printerr(builder.str);
         }
