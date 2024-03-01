@@ -20,6 +20,9 @@
  */
 
 namespace Varallel {
+    [CCode (cheader_filename = "../include/consolewidth.h", cname = "get_console_width")]
+    public extern int get_console_width ();
+
     [Compact (opaque = true)]
     public class Reporter {
         [CCode (has_target = false)]
@@ -187,8 +190,5 @@ namespace Varallel {
             }
             printerr(builder.str);
         }
-
-        [CCode (cheader_filename = "../include/consolewidth.h", cname = "get_console_width")]
-        public static extern int get_console_width ();
     }
 }
