@@ -59,7 +59,7 @@ For more information, or to report bugs, please visit:
 * `{}`
   * Input arguement. This replacement will be replaced by a full line read from the input source. The input source may be stdin (standard input), `:::`, or `::::`.
 * `{.}`
-  * Input arguement without extension. This replacement string will be replaced by the input with the extension removed. If the input arguement contains. after the last / the last. till the end of the string will be removed and {.} will be replaced with the remaining.
+  * Input arguement without extension. This replacement string will be replaced by the input with the extension removed. If the input arguement contains `.` after the last `/` the last `.` till the end of the string will be removed and `{.}` will be replaced with the remaining.
     * E.g. `foo.webp` becomes `foo`, `subdir/foo.webp` becomes `subdir/foo`, `sub.dir/foo.webp` becomes `sub.dir/foo`, `sub.dir/bar` remains `sub.dir/bar`. If the input arguement does not contain. it will remain unchanged.
 * `{/}`
   * Basename of input arguement. This replacement string will be replaced by the input with the directory part removed.

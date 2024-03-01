@@ -33,7 +33,7 @@ namespace Varallel {
         string? shell = null;
         string shell_args = "-c";
         static Regex slot_in_command = /\{(\/|\.|\/\.|\/\/|#)?\}/;
-        ProgressBar progress_bar;
+        ProgressBar? progress_bar = null;
         public bool show_progress_bar = false;
         Mutex mutex = Mutex ();
         bool hide_sub_output = false;
@@ -70,8 +70,8 @@ namespace Varallel {
             }
         }
 
-        inline void thread_safe_update_progress_bar () {
-            if (show_progress_bar) {
+        inline void safe_update_progress_bar () {
+            if (progress_bar != null) {
                 mutex.lock ();
                 progress_bar.update ();
                 mutex.unlock ();
@@ -93,10 +93,10 @@ namespace Varallel {
                         print ("%s", subprsc.output);
                     }
                     Reporter.print_command_status (subprsc.command_line, status);
-                    thread_safe_update_progress_bar ();
+                    safe_update_progress_bar ();
                 } catch (SpawnError e) {
                     printerr ("SpawnError: %s\n", e.message);
-                    thread_safe_update_progress_bar ();
+                    safe_update_progress_bar ();
                 }
             }, 
             this.jobs, 
@@ -105,17 +105,17 @@ namespace Varallel {
                 var command = parse_single_command (original_command, original_args[i], i);
                 if (command == null) {
                     printerr ("Failed to process command: %s\n", original_command);
-                    thread_safe_update_progress_bar ();
+                    safe_update_progress_bar ();
                     continue;
                 }
                 try {
                     pool.add (new Unit (command, shell, shell_args));
                 } catch (ThreadError e) {
                     printerr ("ThreadError: %s\n", e.message);
-                    thread_safe_update_progress_bar ();
+                    safe_update_progress_bar ();
                 } catch (ShellError e) {
                     printerr ("ShellError: %s\n", e.message);
-                    thread_safe_update_progress_bar ();
+                    safe_update_progress_bar ();
                 }
             }
         }        
@@ -218,7 +218,7 @@ namespace Varallel {
                 // Consider the case that the command is not changed
                 // Put the argument at the end of the command
                 if (ret == command) {
-                    ret = command + " " + single_arg;
+                    ret = "%s %s".printf (command, single_arg);
                 }
                 return ret;
             } catch (RegexError e) {
