@@ -70,7 +70,7 @@ namespace Varallel {
             }
         }
 
-        inline void thread_safe_show_progress_bar () {
+        inline void thread_safe_update_progress_bar () {
             if (show_progress_bar) {
                 mutex.lock ();
                 progress_bar.update ();
@@ -92,39 +92,37 @@ namespace Varallel {
                         printerr ("%s", subprsc.error);
                         print ("%s", subprsc.output);
                     }
-                    if (status != 0) {
-                        Reporter.print_command_status (subprsc.command_line, status);
-                    }
-                    thread_safe_show_progress_bar ();
+                    Reporter.print_command_status (subprsc.command_line, status);
+                    thread_safe_update_progress_bar ();
                 } catch (SpawnError e) {
                     printerr ("SpawnError: %s\n", e.message);
-                    thread_safe_show_progress_bar ();
+                    thread_safe_update_progress_bar ();
                 }
             }, 
             this.jobs, 
             false);
             for (uint i = 0; i < original_args.length; i += 1) {
-                var command = process_single_command (original_command, original_args[i], i);
+                var command = parse_single_command (original_command, original_args[i], i);
                 if (command == null) {
                     printerr ("Failed to process command: %s\n", original_command);
-                    thread_safe_show_progress_bar ();
+                    thread_safe_update_progress_bar ();
                     continue;
                 }
                 try {
                     pool.add (new Unit (command, shell, shell_args));
                 } catch (ThreadError e) {
                     printerr ("ThreadError: %s\n", e.message);
-                    thread_safe_show_progress_bar ();
+                    thread_safe_update_progress_bar ();
                 } catch (ShellError e) {
                     printerr ("ShellError: %s\n", e.message);
-                    thread_safe_show_progress_bar ();
+                    thread_safe_update_progress_bar ();
                 }
             }
         }        
 
-        static inline string? process_single_command (string command, string single_arg, uint index) {
+        static inline string? parse_single_command (string command, string single_arg, uint index) {
             /**
-             * process_single_command:
+             * parse_single_command:
              * @command: the command to be executed
              * @single_arg: the argument of the command
              * @index: the index of the job
