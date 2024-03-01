@@ -93,7 +93,7 @@ namespace Varallel {
                         print ("%s", subprsc.output);
                     }
                     if (status != 0) {
-                        printerr ("Command `%s` failed with status: %d\n", subprsc.command_line, status);
+                        Reporter.print_command_status (subprsc.command_line, status);
                     }
                     thread_safe_show_progress_bar ();
                 } catch (SpawnError e) {

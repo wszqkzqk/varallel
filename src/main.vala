@@ -38,29 +38,6 @@ namespace Varallel {
             { null }
         };
 
-        [CCode (has_target = false)]
-        public delegate int AttyFunc (int fd);
-        public static bool isatty (int fd) {
-            Module module = Module.open (null, ModuleFlags.LAZY);
-            if (module == null) {
-                printerr ("Error opening libc\n");
-                // Default to true here to avid IO blocking of tty's stdin
-                return true;
-            }
-            void* _func;
-            module.symbol ("isatty", out _func);
-            if (_func == null) {
-                module.symbol ("_isatty", out _func);
-                if (_func == null) {
-                    printerr ("Error getting isatty/_isatty\n");
-                    // Default to true here to avid IO blocking of tty's stdin
-                    return true;
-                }
-            }
-            AttyFunc? func = (AttyFunc) _func;
-            return (func (fd) != 0);
-        }
-
         public static bool parse_nonoption_args (ref unowned string[] args,
                                                  out string? command,
                                                  out string[]? args_list) {
@@ -76,7 +53,7 @@ namespace Varallel {
             if (args.length <= 2) {
                 // No args specified, use stdin (pipe) as input
                 // Check if stdin is a pipe
-                if (isatty (stdin.fileno ())) {
+                if (Reporter.isatty (stdin.fileno ())) {
                     // stdin is a tty
                     // No input and no command specified, ERROR
                     return false;
@@ -102,7 +79,7 @@ namespace Varallel {
                 foreach (var filename in args[3:]) {
                     if (filename == "-") {
                         // Use stdin as input
-                        if (isatty (stdin.fileno ())) {
+                        if (Reporter.isatty (stdin.fileno ())) {
                             // stdin is a tty, WARNING and ignore
                             printerr ("Warning: stdin is a tty, ignoring\n");
                             continue;
