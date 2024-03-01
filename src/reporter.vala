@@ -174,10 +174,10 @@ namespace Varallel {
         public void print_progress () {
             // Only the the effictive length of progressbar is no less than 5, the progressbar will be shown
             var builder = new StringBuilder (title);
-            int bar_length = get_console_width () - title.length - 12;
+            int bar_length = get_console_width () - title.length - 12; // 12 is the length of ": [] 100.00%"
             if (bar_length >= 5) {
                 builder.append (": [");
-                var fill_length = Math.lround (percentage / 100.0 * bar_length);
+                var fill_length = (int) (percentage / 100.0 * bar_length);
                 for (int i = 0; i < fill_length; i++) {
                     builder.append_c (fill_char);
                 }

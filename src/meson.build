@@ -13,7 +13,6 @@ executable_sources = [
 ]
 
 basic_deps = [
-  math,
   glib,
   gobject,
   gio,

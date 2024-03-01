@@ -4,8 +4,6 @@ project('varallel', ['c', 'vala'],
   default_options: [ 'warning_level=2', 'werror=false', 'b_lto=true'],
 )
 
-math = meson.get_compiler('c').find_library('m', required : false)
-
 glib = dependency('glib-2.0')
 gobject = dependency('gobject-2.0')
 gio = dependency('gio-2.0')
