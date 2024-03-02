@@ -168,12 +168,7 @@ namespace Varallel {
                             case '.':
                                 // {.}: Input arguement without extension
                                 if (arg_no_ext == null) {
-                                    var pos = single_arg.last_index_of_char ('.');
-                                    if (pos == -1) {
-                                        arg_no_ext = single_arg;
-                                    } else {
-                                        arg_no_ext = single_arg[:pos];
-                                    }
+                                    arg_no_ext = get_name_without_extension (single_arg);
                                 }
                                 builder.append (arg_no_ext);
                                 break;
@@ -194,11 +189,14 @@ namespace Varallel {
                             } else if (old_center[1] == '.') {
                                 // {/.}: Basename without extension of input line
                                 if (arg_basename_no_ext == null) {
-                                    var pos = single_arg.last_index_of_char ('.');
+                                    if (arg_basename == null) {
+                                        arg_basename = Path.get_basename (single_arg);
+                                    }
+                                    var pos = arg_basename.last_index_of_char ('.');
                                     if (pos == -1) {
-                                        arg_basename_no_ext = Path.get_basename (single_arg);
+                                        arg_basename_no_ext = arg_basename;
                                     } else {
-                                        arg_basename_no_ext = Path.get_basename (single_arg[:pos]);
+                                        arg_basename_no_ext = arg_basename[:pos];
                                     }
                                 }
                                 builder.append (arg_basename_no_ext);
@@ -224,6 +222,29 @@ namespace Varallel {
             } catch (RegexError e) {
                 printerr ("RegexError: %s\n", e.message);
                 return null;
+            }
+        }
+
+        inline static string get_name_without_extension (string filename) {
+            /**
+             * get_name_without_extension:
+             * @filename: the filename
+             *
+             * Get the name of the file without extension.
+             */
+            var last_dot = filename.last_index_of_char ('.');
+            var last_separator = filename.last_index_of_char (Path.DIR_SEPARATOR);
+            if (IS_WINDOWS) {
+                // Windows can also use / as the separator
+                var last_slash = filename.last_index_of_char ('/');
+                if (last_slash > last_separator) {
+                    last_separator = last_slash;
+                }
+            }
+            if (last_dot == -1 || last_dot < last_separator) {
+                return filename;
+            } else {
+                return filename[:last_dot];
             }
         }
 
