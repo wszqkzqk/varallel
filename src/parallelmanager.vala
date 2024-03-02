@@ -94,7 +94,7 @@ namespace Varallel {
                         printerr ("%s", subprsc.error);
                         print ("%s", subprsc.output);
                     }
-                    Reporter.print_command_status (subprsc.command_line, status);
+                    Reporter.report_failed_command (subprsc.command_line, status);
                     if (progress_bar != null) {
                         progress_bar.update ();
                     }

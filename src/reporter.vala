@@ -121,25 +121,23 @@ namespace Varallel {
             return (func (fd) != 0);
         }
 
-        public static inline void print_command_status (string command, int status) {
-            if (status != 0) {
-                if (in_tty == null) {
-                    in_tty = isatty (stderr.fileno ());
-                }
-                if (in_tty) {
-                    printerr ("Command `%s%s%s' failed with status: %s%d%s\n",
-                                EscapeCode.BOLD.to_string () + EscapeCode.YELLOW.to_string (),
-                                command,
-                                EscapeCode.END.to_string (),
-                                EscapeCode.RED.to_string () + EscapeCode.BOLD.to_string (),
-                                status,
-                                EscapeCode.END.to_string ());
-                    return;
-                }
-                printerr ("Command `%s' failed with status: %d\n",
-                            command,
-                            status);
+        public static inline void report_failed_command (string command, int status) {
+            if (in_tty == null) {
+                in_tty = isatty (stderr.fileno ());
             }
+            if (in_tty) {
+                printerr ("Command `%s%s%s' failed with status: %s%d%s\n",
+                            EscapeCode.BOLD.to_string () + EscapeCode.YELLOW.to_string (),
+                            command,
+                            EscapeCode.END.to_string (),
+                            EscapeCode.RED.to_string () + EscapeCode.BOLD.to_string (),
+                            status,
+                            EscapeCode.END.to_string ());
+                return;
+            }
+            printerr ("Command `%s' failed with status: %d\n",
+                        command,
+                        status);
         }
     }
 
@@ -151,6 +149,7 @@ namespace Varallel {
         int current_step;
         char fill_char;
         char empty_char;
+        bool in_tty;
     
         public ProgressBar (int total_steps,
                             char fill_char = '#',
@@ -161,6 +160,7 @@ namespace Varallel {
             this.current_step = 0;
             this.fill_char = fill_char;
             this.empty_char = empty_char;
+            this.in_tty = Reporter.isatty (stderr.fileno ());
         }
     
         public int update () {
@@ -176,12 +176,14 @@ namespace Varallel {
             var builder = new StringBuilder ("\r");
             builder.append (title);
             int bar_length = get_console_width () - title.length - 12; // 12 is the length of ": [] 100.00%"
-            if (bar_length >= 5) {
+            if (in_tty || bar_length >= 5) {
                 builder.append (": [");
                 var fill_length = (int) (percentage / 100.0 * bar_length);
+                builder.append (Reporter.EscapeCode.INVERT.to_string ());
                 for (int i = 0; i < fill_length; i++) {
                     builder.append_c (fill_char);
                 }
+                builder.append (Reporter.EscapeCode.END.to_string ());
                 for (int i = 0; i < bar_length - fill_length; i++) {
                     builder.append_c (empty_char);
                 }
