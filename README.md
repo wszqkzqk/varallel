@@ -38,9 +38,9 @@ Application Options:
   -v, --version               Display version number
   -j, --jobs=n                Run n jobs in parallel
   -r, --colsep=EXPRESSION     Regex to split the arguement
-  --hide                      Hide subcommands output
+  -q, --quiet                 Hide subcommands output
   -s, --shell=SHELL           Manually set SHELL to run the command, set 'n' to disable to use any shell
-  -b, --bar                   Show progress bar
+  -d, --hide-bar              Hide progress bar
 
 Replacements in cammand:
   {}                          Input arguement
@@ -48,7 +48,7 @@ Replacements in cammand:
   {/}                         Basename of input line
   {//}                        Dirname of input line
   {/.}                        Basename of input line without extension
-  {#}                         Job index
+  {#}                         Job index, starting from 1
   
 For more information, or to report bugs, please visit:
     <https://github.com/wszqkzqk/varallel>
@@ -77,12 +77,12 @@ For more information, or to report bugs, please visit:
   * Run n jobs in parallel. The default value is the number of logical CPU cores.
 * `-r=EXPRESSION` `--colsep=EXPRESSION`
   * User-defined regex to split the arguement.
-* `--hide`
+* `-q` `--quiet`
   * Hide subcommands output.
 * `-s=SHELL` `--shell=SHELL`
   * Manually set SHELL to run the command, set it to `n` to disable to use any shell, and the subcommands will be spawned directly.
-* `-b` `--bar`
-  * Show progress bar.
+* `-d` `--hide-bar`
+  * Hide progress bar.
 
 ### Examples
 
