@@ -37,6 +37,8 @@ namespace Varallel {
         public bool show_progress_bar = false;
         Mutex mutex = Mutex ();
         bool hide_sub_output = false;
+        uint success_count = 0;
+        uint failure_count = 0;
         
         public ParallelManager (string original_command,
                                 string[] original_args,
@@ -70,14 +72,6 @@ namespace Varallel {
             }
         }
 
-        inline void safe_update_progress_bar () {
-            if (progress_bar != null) {
-                mutex.lock ();
-                progress_bar.update ();
-                mutex.unlock ();
-            }
-        }
-
         public void run () throws ThreadError {
             /**
              * run:
@@ -91,17 +85,31 @@ namespace Varallel {
 
                     mutex.lock ();
                     if (!hide_sub_output) {
-                        printerr ("%s", subprsc.error);
-                        print ("%s", subprsc.output);
+                        if ((subprsc.error != null && subprsc.error.length > 0)
+                        || (subprsc.output != null && subprsc.output.length > 0)) {
+                            stderr.putc ('\n');
+                            printerr ("%s", subprsc.error);
+                            print ("%s", subprsc.output);
+                        }
                     }
-                    Reporter.report_failed_command (subprsc.command_line, status);
+                    if (status == 0) {
+                        success_count += 1;
+                    } else {
+                        failure_count += 1;
+                        Reporter.report_failed_command (subprsc.command_line, status);
+                    }
                     if (progress_bar != null) {
-                        progress_bar.update ();
+                        progress_bar.update (success_count, failure_count);
                     }
                     mutex.unlock ();
                 } catch (SpawnError e) {
+                    mutex.lock ();
                     printerr ("SpawnError: %s\n", e.message);
-                    safe_update_progress_bar ();
+                    failure_count += 1;
+                    if (progress_bar != null) {
+                        progress_bar.update (success_count, failure_count);
+                    }
+                    mutex.unlock ();
                 }
             }, 
             this.jobs, 
@@ -109,18 +117,34 @@ namespace Varallel {
             for (uint i = 0; i < original_args.length; i += 1) {
                 var command = parse_single_command (original_command, original_args[i], i);
                 if (command == null) {
+                    mutex.lock ();
                     printerr ("Failed to process command: %s\n", original_command);
-                    safe_update_progress_bar ();
+                    failure_count += 1;
+                    if (progress_bar != null) {
+                        progress_bar.update (success_count, failure_count);
+                    }
+                    mutex.unlock ();
                     continue;
                 }
                 try {
                     pool.add (new Unit (command, shell, shell_args));
                 } catch (ThreadError e) {
+                    mutex.lock ();
                     printerr ("ThreadError: %s\n", e.message);
-                    safe_update_progress_bar ();
+                    failure_count += 1;
+                    if (progress_bar != null) {
+                        progress_bar.update (success_count, failure_count);
+                    }
+                    mutex.unlock ();
                 } catch (ShellError e) {
+                    mutex.lock ();
                     printerr ("ShellError: %s\n", e.message);
-                    safe_update_progress_bar ();
+                    failure_count += 1;
+                    if (progress_bar != null) {
+                        progress_bar.update (success_count, failure_count);
+                    }
+                    mutex.unlock ();
+                    continue;
                 }
             }
         }        
@@ -151,7 +175,7 @@ namespace Varallel {
                             builder.append (single_arg);
                             return false;
                         }
-                        
+
                         switch (old_center.length) {
                         case 0:
                             // {}: Input arguement

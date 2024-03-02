@@ -30,7 +30,7 @@ namespace Varallel {
         static bool? in_tty = null;
 
         public enum EscapeCode {
-            END,
+            RESET,
             RED,
             GREEN,
             YELLOW,
@@ -46,54 +46,54 @@ namespace Varallel {
             INVERT;
 
             // Colors
-            const string ANSI_COLOR_RED = "\x1b[31m";
-            const string ANSI_COLOR_GREEN = "\x1b[32m";
-            const string ANSI_COLOR_YELLOW = "\x1b[33m";
-            const string ANSI_COLOR_BLUE = "\x1b[34m";
-            const string ANSI_COLOR_MAGENTA = "\x1b[35m";
-            const string ANSI_COLOR_CYAN = "\x1b[36m";
-            const string ANSI_COLOR_WHITE = "\x1b[37m";
+            public const string ANSI_RED = "\x1b[31m";
+            public const string ANSI_GREEN = "\x1b[32m";
+            public const string ANSI_YELLOW = "\x1b[33m";
+            public const string ANSI_BLUE = "\x1b[34m";
+            public const string ANSI_MAGENTA = "\x1b[35m";
+            public const string ANSI_CYAN = "\x1b[36m";
+            public const string ANSI_WHITE = "\x1b[37m";
             // Effects
-            const string ANSI_COLOR_BOLD = "\x1b[1m";
-            const string ANSI_COLOR_UNDERLINE = "\x1b[4m";
-            const string ANSI_COLOR_BLINK = "\x1b[5m";
-            const string ANSI_COLOR_DIM = "\x1b[2m";
-            const string ANSI_COLOR_HIDDEN = "\x1b[8m";
-            const string ANSI_COLOR_INVERT = "\x1b[7m";
-            const string ANSI_COLOR_END = "\x1b[0m";
+            public const string ANSI_BOLD = "\x1b[1m";
+            public const string ANSI_UNDERLINE = "\x1b[4m";
+            public const string ANSI_BLINK = "\x1b[5m";
+            public const string ANSI_DIM = "\x1b[2m";
+            public const string ANSI_HIDDEN = "\x1b[8m";
+            public const string ANSI_INVERT = "\x1b[7m";
+            public const string ANSI_RESET = "\x1b[0m";
 
             public inline unowned string to_string () {
                 switch (this) {
-                case EscapeCode.END:
-                    return ANSI_COLOR_END;
+                case EscapeCode.RESET:
+                    return ANSI_RESET;
                 case EscapeCode.RED:
-                    return ANSI_COLOR_RED;
+                    return ANSI_RED;
                 case EscapeCode.GREEN:
-                    return ANSI_COLOR_GREEN;
+                    return ANSI_GREEN;
                 case EscapeCode.YELLOW:
-                    return ANSI_COLOR_YELLOW;
+                    return ANSI_YELLOW;
                 case EscapeCode.BLUE:
-                    return ANSI_COLOR_BLUE;
+                    return ANSI_BLUE;
                 case EscapeCode.MAGENTA:
-                    return ANSI_COLOR_MAGENTA;
+                    return ANSI_MAGENTA;
                 case EscapeCode.CYAN:
-                    return ANSI_COLOR_CYAN;
+                    return ANSI_CYAN;
                 case EscapeCode.WHITE:
-                    return ANSI_COLOR_WHITE;
+                    return ANSI_WHITE;
                 case EscapeCode.BOLD:
-                    return ANSI_COLOR_BOLD;
+                    return ANSI_BOLD;
                 case EscapeCode.UNDERLINE:
-                    return ANSI_COLOR_UNDERLINE;
+                    return ANSI_UNDERLINE;
                 case EscapeCode.BLINK:
-                    return ANSI_COLOR_BLINK;
+                    return ANSI_BLINK;
                 case EscapeCode.DIM:
-                    return ANSI_COLOR_DIM;
+                    return ANSI_DIM;
                 case EscapeCode.HIDDEN:
-                    return ANSI_COLOR_HIDDEN;
+                    return ANSI_HIDDEN;
                 case EscapeCode.INVERT:
-                    return ANSI_COLOR_INVERT;
+                    return ANSI_INVERT;
                 default:
-                    return ANSI_COLOR_END;
+                    return ANSI_RESET;
                 }
             }
         }
@@ -127,12 +127,12 @@ namespace Varallel {
             }
             if (in_tty) {
                 printerr ("Command `%s%s%s' failed with status: %s%d%s\n",
-                            EscapeCode.BOLD.to_string () + EscapeCode.YELLOW.to_string (),
+                            Reporter.EscapeCode.ANSI_BOLD + EscapeCode.ANSI_BOLD,
                             command,
-                            EscapeCode.END.to_string (),
-                            EscapeCode.RED.to_string () + EscapeCode.BOLD.to_string (),
+                            Reporter.EscapeCode.ANSI_RESET,
+                            Reporter.EscapeCode.ANSI_RED + EscapeCode.ANSI_BOLD,
                             status,
-                            EscapeCode.END.to_string ());
+                            Reporter.EscapeCode.ANSI_RESET);
                 return;
             }
             printerr ("Command `%s' failed with status: %d\n",
@@ -152,9 +152,9 @@ namespace Varallel {
         bool in_tty;
     
         public ProgressBar (int total_steps,
+                            string title = "Progress",
                             char fill_char = '#',
-                            char empty_char = '-',
-                            string title = "Progress") {
+                            char empty_char = '-') {
             this.title = title;
             this.total_steps = total_steps;
             this.current_step = 0;
@@ -163,27 +163,45 @@ namespace Varallel {
             this.in_tty = Reporter.isatty (stderr.fileno ());
         }
     
-        public int update () {
+        public inline int update (uint success_count, uint failure_count) {
             current_step += 1;
             current_step = (current_step > total_steps) ? total_steps : current_step;
             percentage = (double) current_step / total_steps * 100.0;
-            print_progress ();
+            print_progress (success_count, failure_count);
             return current_step;
         }
 
-        public void print_progress () {
+        public inline void print_progress (uint success_count, uint failure_count) {
+            var prefix = "\rSuccess: %u, Failure: %u, ".printf (success_count, failure_count);
+            var prelength = prefix.length;
+            if (in_tty) {
+                prefix = "\r".concat (
+                    Reporter.EscapeCode.ANSI_BOLD,
+                    Reporter.EscapeCode.ANSI_GREEN,
+                    "Success: ",
+                    success_count.to_string (),
+                    Reporter.EscapeCode.ANSI_RESET,
+                    " ",
+                    Reporter.EscapeCode.ANSI_BOLD,
+                    Reporter.EscapeCode.ANSI_RED,
+                    "Failure: ",
+                    failure_count.to_string (),
+                    Reporter.EscapeCode.ANSI_RESET,
+                    ", ");
+            }
             // Only the the effictive length of progressbar is no less than 5, the progressbar will be shown
-            var builder = new StringBuilder ("\r");
+            var builder = new StringBuilder (prefix);
             builder.append (title);
-            int bar_length = get_console_width () - title.length - 12; // 12 is the length of ": [] 100.00%"
+            // 12 is the length of ": [] 100.00%"
+            int bar_length = get_console_width () - prelength - title.length - 12;
             if (in_tty || bar_length >= 5) {
                 builder.append (": [");
                 var fill_length = (int) (percentage / 100.0 * bar_length);
-                builder.append (Reporter.EscapeCode.INVERT.to_string ());
+                builder.append (Reporter.EscapeCode.ANSI_INVERT);
                 for (int i = 0; i < fill_length; i++) {
                     builder.append_c (fill_char);
                 }
-                builder.append (Reporter.EscapeCode.END.to_string ());
+                builder.append (Reporter.EscapeCode.ANSI_RESET);
                 for (int i = 0; i < bar_length - fill_length; i++) {
                     builder.append_c (empty_char);
                 }
