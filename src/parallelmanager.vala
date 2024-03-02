@@ -79,41 +79,46 @@ namespace Varallel {
              * Run the commands in parallel.
              */
             pool = new ThreadPool<Unit>.with_owned_data (
-            (subprsc) => {
-                try {
-                    var status = subprsc.run ();
+                (subprsc) => {
+                    try {
+                        var status = subprsc.run ();
 
-                    mutex.lock ();
-                    if (!hide_sub_output) {
-                        if ((subprsc.error != null && subprsc.error.length > 0)
-                        || (subprsc.output != null && subprsc.output.length > 0)) {
-                            stderr.putc ('\n');
-                            printerr ("%s", subprsc.error);
-                            print ("%s", subprsc.output);
+                        mutex.lock ();
+                        if (!hide_sub_output) {
+                            if ((subprsc.error != null && subprsc.error.length > 0)
+                            || (subprsc.output != null && subprsc.output.length > 0)) {
+                                stderr.putc ('\n'); // Add a newline to separate the output of different commands
+                                printerr ("%s", subprsc.error);
+                                print ("%s", subprsc.output);
+                            }
                         }
-                    }
-                    if (status == 0) {
-                        success_count += 1;
-                    } else {
+                        if (status == 0) {
+                            success_count += 1;
+                        } else {
+                            failure_count += 1;
+                            Reporter.report_failed_command (subprsc.command_line, status);
+                        }
+                        if (progress_bar != null) {
+                            progress_bar.update (success_count, failure_count);
+                        }
+                        mutex.unlock ();
+                    } catch (SpawnError e) {
+                        mutex.lock ();
+                        printerr ("SpawnError: %s\n", e.message);
                         failure_count += 1;
-                        Reporter.report_failed_command (subprsc.command_line, status);
+                        if (progress_bar != null) {
+                            progress_bar.update (success_count, failure_count);
+                        }
+                        mutex.unlock ();
                     }
-                    if (progress_bar != null) {
-                        progress_bar.update (success_count, failure_count);
-                    }
-                    mutex.unlock ();
-                } catch (SpawnError e) {
-                    mutex.lock ();
-                    printerr ("SpawnError: %s\n", e.message);
-                    failure_count += 1;
-                    if (progress_bar != null) {
-                        progress_bar.update (success_count, failure_count);
-                    }
-                    mutex.unlock ();
-                }
-            }, 
-            this.jobs, 
-            false);
+                },
+                this.jobs, 
+                false);
+
+            if (show_progress_bar) {
+                // The initial progress bar (Success: 0 Failure: 0)
+                progress_bar.print_progress (success_count, failure_count);
+            }
             for (uint i = 0; i < original_args.length; i += 1) {
                 var command = parse_single_command (original_command, original_args[i], i);
                 if (command == null) {
