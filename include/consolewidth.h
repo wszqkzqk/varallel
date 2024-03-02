@@ -27,7 +27,6 @@ __declspec(dllexport) extern inline int get_console_width () {
   
     int ret = GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
     columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    print ("%d", columns);
     return (int) columns;
 }
 #else
