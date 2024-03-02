@@ -136,7 +136,7 @@ namespace Varallel {
   {/}                         Basename of input line
   {//}                        Dirname of input line
   {/.}                        Basename of input line without extension
-  {#}                         Job index
+  {#}                         Job index, starting from 1
   
 For more information, or to report bugs, please visit:
     <https://github.com/wszqkzqk/varallel>");

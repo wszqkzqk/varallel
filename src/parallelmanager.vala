@@ -168,7 +168,8 @@ namespace Varallel {
                                 break;
                             case '#':
                                 // {#}: Job index
-                                builder.append (index.to_string ());
+                                // The job index is 1-based, so we need to add 1
+                                builder.append ((index + 1).to_string ());
                                 break;
                             case '.':
                                 // {.}: Input arguement without extension

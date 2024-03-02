@@ -68,7 +68,7 @@ For more information, or to report bugs, please visit:
 * `{/.}`
   * Basename of Input arguement without extension. This replacement string will be replaced by the input with the directory and extension part removed. It is a combination of `{/}` and `{.}`. 
 * `{#}`
-  * Sequence number of the job to run. This replacement string will be replaced by the sequence number of the job being run.
+  * Sequence number of the job to run. This replacement string will be replaced by the sequence number of the job being run. Starting from `1`.
 * `:::`
   * Read the arguement list from the command line.
 * `::::`
