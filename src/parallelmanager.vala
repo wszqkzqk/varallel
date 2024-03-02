@@ -88,12 +88,17 @@ namespace Varallel {
             (subprsc) => {
                 try {
                     var status = subprsc.run ();
+
+                    mutex.lock ();
                     if (!hide_sub_output) {
                         printerr ("%s", subprsc.error);
                         print ("%s", subprsc.output);
                     }
                     Reporter.print_command_status (subprsc.command_line, status);
-                    safe_update_progress_bar ();
+                    if (progress_bar != null) {
+                        progress_bar.update ();
+                    }
+                    mutex.unlock ();
                 } catch (SpawnError e) {
                     printerr ("SpawnError: %s\n", e.message);
                     safe_update_progress_bar ();
