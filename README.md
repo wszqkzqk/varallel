@@ -50,6 +50,7 @@ Replacements in cammand:
   {//}                        Dirname of input line
   {/.}                        Basename of input line without extension
   {#}                         Job index, starting from 1
+  {3} {2.} {4/} {1/.} etc.    Positional replacement strings
   
 For more information, or to report bugs, please visit:
     <https://github.com/wszqkzqk/varallel>
@@ -70,6 +71,8 @@ For more information, or to report bugs, please visit:
   * Basename of Input argument without extension. This replacement string will be replaced by the input with the directory and extension part removed. It is a combination of `{/}` and `{.}`. 
 * `{#}`
   * Sequence number of the job to run. This replacement string will be replaced by the sequence number of the job being run. Starting from `1`.
+* `{3}` `{2.}` `{4/}` `{1/.}` `{5//}` etc.
+  * Positional replacement strings. This replacement string will be replaced by the corresponding positional argument group. The first group is `{1}`, the second is `{2}`, and so on. Positional arguments can be combined with other replacement options.
 * `:::`
   * Read the argument list from the command line.
 * `::::`
@@ -109,6 +112,7 @@ varallel echo < <(seq 3 7)
 ```bash
 varallel echo ::: 1 2 3 4 5 6
 varallel 'echo "{.} {/} {#} {//}"' ::: /home/wszqkzqk ./README.md ~/Pictures/Arch_Linux_logo.svg
+varallel 'echo "{1/} {0} {1.}"' ::: a b c d e f g ::: /home/wszqkzqk ./README.md ~/Pictures/Arch_Linux_logo.svg
 ```
 
 #### Use files
