@@ -28,11 +28,11 @@ namespace Varallel {
          */
         ThreadPool<Unit> pool;
         string original_command;
-        string[] original_args;
+        GenericArray<GenericArray<string>> original_args;
         int jobs = 0;
         string? shell = null;
         string shell_args = "-c";
-        static Regex slot_in_command = /\{(\/|\.|\/\.|\/\/|#)?\}/;
+        static Regex slot_in_command = /\{([0-9]*)(\/|\.|\/\.|\/\/|#)?\}/;
         ProgressBar? progress_bar = null;
         public bool show_progress_bar = false;
         Mutex mutex = Mutex ();
@@ -41,7 +41,7 @@ namespace Varallel {
         uint failure_count = 0;
         
         public ParallelManager (string original_command,
-                                string[] original_args,
+                                GenericArray<GenericArray<string>> original_args,
                                 int jobs = 0,
                                 string? shell = null,
                                 bool use_shell = true,
@@ -154,7 +154,7 @@ namespace Varallel {
             }
         }        
 
-        static inline string? parse_single_command (string command, string single_arg, uint index) {
+        static inline string? parse_single_command (string command, GenericArray<string> single_arg_list, uint index) {
             /**
              * parse_single_command:
              * @command: the command to be executed
@@ -174,7 +174,28 @@ namespace Varallel {
                     0,
                     0,
                     (match_info, builder) => {
-                        var old_center = match_info.fetch (1);
+                        var position_str = match_info.fetch (1);
+                        var old_center = match_info.fetch (2);
+                        string single_arg;
+                        int position;
+                        if (position_str == null
+                            || position_str == ""
+                            || (position = int.parse (position_str)) == 0) {
+                            // No opsition is specified or the position is 0
+                            // Use all the arguments
+                            single_arg = string.joinv (" ", single_arg_list.data);
+                        } else {
+                            // Use the specified position
+                            position = int.parse (position_str);
+                            if (position > single_arg_list.length) {
+                                // The position is out of range
+                                // Feature: If the position is out of range,
+                                // directly return (means to replace it with "")
+                                // equal to remove the slot (instead of ignore)
+                                return false;
+                            }
+                            single_arg = single_arg_list[position - 1];
+                        }
                         if (old_center == null) {
                             // {}: Input argument
                             builder.append (single_arg);
@@ -251,7 +272,9 @@ namespace Varallel {
                 // Consider the case that the command is not changed
                 // Put the argument at the end of the command
                 if (ret == command) {
-                    ret = "%s %s".printf (command, single_arg);
+                    ret = "%s %s".printf (
+                        command, 
+                        string.joinv (" ", single_arg_list.data));
                 }
                 return ret;
             } catch (RegexError e) {
