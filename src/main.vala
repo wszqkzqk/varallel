@@ -76,7 +76,9 @@ namespace Varallel {
                     line_handle_colsep (line, ref arg_array);
                 }
                 add_args (arg_array, ref args_matrix);
+                return true;
             }
+
             for (var i = 2; i < args.length; i += 1) {
                 unowned var arg = args[i];
                 if (arg == ":::") {
