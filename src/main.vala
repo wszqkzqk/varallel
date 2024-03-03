@@ -32,7 +32,7 @@ namespace Varallel {
         const OptionEntry[] options = {
             { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref show_version, "Display version number", null },
             { "jobs", 'j', OptionFlags.NONE, OptionArg.INT, ref jobs, "Run n jobs in parallel", "n" },
-            { "colsep", 'r', OptionFlags.NONE, OptionArg.STRING, ref colsep_regex_str, "Regex to split the arguement", "EXPRESSION" },
+            { "colsep", 'r', OptionFlags.NONE, OptionArg.STRING, ref colsep_regex_str, "Regex to split the argument", "EXPRESSION" },
             { "quiet", 'q', OptionFlags.NONE, OptionArg.NONE, ref hide_sub_output, "Hide subcommands output", null },
             { "shell", 's', OptionFlags.NONE, OptionArg.STRING, ref shell, "Manually set SHELL to run the command, set 'n' to disable to use any shell", "SHELL" },
             { "hide-bar", '\0', OptionFlags.NONE, OptionArg.NONE, ref hide_bar, "Hide progress bar", null},
@@ -133,8 +133,8 @@ namespace Varallel {
             var opt_context = new OptionContext ("command [:::|::::] [arguments]");
             opt_context.set_help_enabled (true);
             opt_context.set_description ("Replacements in cammand:
-  {}                          Input arguement
-  {.}                         Input arguement without extension
+  {}                          Input argument
+  {.}                         Input argument without extension
   {/}                         Basename of input line
   {//}                        Dirname of input line
   {/.}                        Basename of input line without extension

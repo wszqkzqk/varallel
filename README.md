@@ -37,15 +37,15 @@ Help Options:
 Application Options:
   -v, --version               Display version number
   -j, --jobs=n                Run n jobs in parallel
-  -r, --colsep=EXPRESSION     Regex to split the arguement
+  -r, --colsep=EXPRESSION     Regex to split the argument
   -q, --quiet                 Hide subcommands output
   -s, --shell=SHELL           Manually set SHELL to run the command, set 'n' to disable to use any shell
   --hide-bar                  Hide progress bar
   --bar                       Show progress bar (Deprecated, it's the default behavior)
 
 Replacements in cammand:
-  {}                          Input arguement
-  {.}                         Input arguement without extension
+  {}                          Input argument
+  {.}                         Input argument without extension
   {/}                         Basename of input line
   {//}                        Dirname of input line
   {/.}                        Basename of input line without extension
@@ -58,26 +58,26 @@ For more information, or to report bugs, please visit:
 #### Explanation
 
 * `{}`
-  * Input arguement. This replacement will be replaced by a full line read from the input source. The input source may be stdin (standard input), `:::`, or `::::`.
+  * Input argument. This replacement will be replaced by a full line read from the input source. The input source may be stdin (standard input), `:::`, or `::::`.
 * `{.}`
-  * Input arguement without extension. This replacement string will be replaced by the input with the extension removed. If the input arguement contains `.` after the last `/` the last `.` till the end of the string will be removed and `{.}` will be replaced with the remaining.
-    * E.g. `foo.webp` becomes `foo`, `subdir/foo.webp` becomes `subdir/foo`, `sub.dir/foo.webp` becomes `sub.dir/foo`, `sub.dir/bar` remains `sub.dir/bar`. If the input arguement does not contain. it will remain unchanged.
+  * Input argument without extension. This replacement string will be replaced by the input with the extension removed. If the input argument contains `.` after the last `/` the last `.` till the end of the string will be removed and `{.}` will be replaced with the remaining.
+    * E.g. `foo.webp` becomes `foo`, `subdir/foo.webp` becomes `subdir/foo`, `sub.dir/foo.webp` becomes `sub.dir/foo`, `sub.dir/bar` remains `sub.dir/bar`. If the input argument does not contain. it will remain unchanged.
 * `{/}`
-  * Basename of input arguement. This replacement string will be replaced by the input with the directory part removed.
+  * Basename of input argument. This replacement string will be replaced by the input with the directory part removed.
 * `{//}`
-  * Dirname of input arguement. This replacement string will be replaced by the dir of the input arguement.
+  * Dirname of input argument. This replacement string will be replaced by the dir of the input argument.
 * `{/.}`
-  * Basename of Input arguement without extension. This replacement string will be replaced by the input with the directory and extension part removed. It is a combination of `{/}` and `{.}`. 
+  * Basename of Input argument without extension. This replacement string will be replaced by the input with the directory and extension part removed. It is a combination of `{/}` and `{.}`. 
 * `{#}`
   * Sequence number of the job to run. This replacement string will be replaced by the sequence number of the job being run. Starting from `1`.
 * `:::`
-  * Read the arguement list from the command line.
+  * Read the argument list from the command line.
 * `::::`
-  * Read the arguement list from the files provided as the arguement.
+  * Read the argument list from the files provided as the argument.
 * `-j=n` `--jobs=n`
   * Run n jobs in parallel. The default value is the number of logical CPU cores.
 * `-r=EXPRESSION` `--colsep=EXPRESSION`
-  * User-defined regex to split the arguement.
+  * User-defined regex to split the argument.
 * `-q` `--quiet`
   * Hide subcommands output.
 * `-s=SHELL` `--shell=SHELL`
@@ -90,11 +90,11 @@ For more information, or to report bugs, please visit:
 
 ### Examples
 
-`varallel` can read the arguement lists from pipes, files or command line.
+`varallel` can read the argument lists from pipes, files or command line.
 
 #### Use pipes
 
-`varallel` can read the arguement lists from pipes.
+`varallel` can read the argument lists from pipes.
 
 ```bash
 seq 1 6 | varallel echo
@@ -104,7 +104,7 @@ varallel echo < <(seq 3 7)
 
 #### Use command lines
 
-`varallel` can read the arguement lists from the command line.
+`varallel` can read the argument lists from the command line.
 
 ```bash
 varallel echo ::: 1 2 3 4 5 6
@@ -113,7 +113,7 @@ varallel 'echo "{.} {/} {#} {//}"' ::: /home/wszqkzqk ./README.md ~/Pictures/Arc
 
 #### Use files
 
-Also, `varallel` can read the arguement lists from files.
+Also, `varallel` can read the argument lists from files.
 
 ```bash
 varallel echo :::: example.txt file*.txt

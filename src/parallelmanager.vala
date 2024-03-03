@@ -176,14 +176,14 @@ namespace Varallel {
                     (match_info, builder) => {
                         var old_center = match_info.fetch (1);
                         if (old_center == null) {
-                            // {}: Input arguement
+                            // {}: Input argument
                             builder.append (single_arg);
                             return false;
                         }
 
                         switch (old_center.length) {
                         case 0:
-                            // {}: Input arguement
+                            // {}: Input argument
                             builder.append (single_arg);
                             return false;
                         case 1:
@@ -201,7 +201,7 @@ namespace Varallel {
                                 builder.append ((index + 1).to_string ());
                                 break;
                             case '.':
-                                // {.}: Input arguement without extension
+                                // {.}: Input argument without extension
                                 if (arg_no_ext == null) {
                                     arg_no_ext = get_name_without_extension (single_arg);
                                 }
