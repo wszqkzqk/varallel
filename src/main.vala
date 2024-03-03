@@ -29,6 +29,7 @@ namespace Varallel {
         static string? shell = null;
         static bool hide_bar = false;
         static bool bar = false;
+        static Regex colsep_regex = null;
         const OptionEntry[] options = {
             { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref show_version, "Display version number", null },
             { "jobs", 'j', OptionFlags.NONE, OptionArg.INT, ref jobs, "Run n jobs in parallel", "n" },
@@ -42,16 +43,24 @@ namespace Varallel {
 
         public static bool parse_nonoption_args (ref unowned string[] args,
                                                  out string? command,
-                                                 out string[]? args_list) {
+                                                 out GenericArray<GenericArray<string>> args_matrix) {
             command = null;
-            args_list = null;
+            args_matrix = new GenericArray<GenericArray<string>> ();
             if (args.length <= 1) {
                 // No command specified
                 return false;
             }
 
+            if (colsep_regex_str != null && colsep_regex == null) {
+                try {
+                    colsep_regex = new Regex (colsep_regex_str);
+                } catch (RegexError e) {
+                    printerr ("RegexError: %s\n", e.message);
+                    return false;
+                }
+            }
+
             command = args[1];
-            var array = new GenericArray<string> ();
             if (args.length <= 2) {
                 // No args specified, use stdin (pipe) as input
                 // Check if stdin is a pipe
@@ -62,69 +71,115 @@ namespace Varallel {
                 }
                 // stdin is a pipe
                 string line;
+                var arg_array = new GenericArray<string> ();
                 while ((line = stdin.read_line ()) != null) {
-                    array.add (line);
+                    line_handle_colsep (line, ref arg_array);
                 }
-            } else if (args[2] == ":::") {
-                // ::: is used to separate command and args
-                if (args.length <= 3) {
-                    printerr ("OptionError: no args specified arter `:::'\n\n");
-                    return false;
-                }
-                array.data = args[3:];
-            } else if (args[2] == "::::") {
-                // :::: is used to separate command and files containing args
-                if (args.length <= 3) {
-                    printerr ("OptionError: no files specified arter `::::'\n\n");
-                    return false;
-                }
-                foreach (var filename in args[3:]) {
-                    if (filename == "-") {
-                        // Use stdin as input
-                        if (Reporter.isatty (stdin.fileno ())) {
-                            // stdin is a tty, WARNING and ignore
-                            printerr ("Warning: stdin is a tty, ignoring\n");
-                            continue;
+                add_args (arg_array, ref args_matrix);
+            }
+            for (var i = 2; i < args.length; i += 1) {
+                unowned var arg = args[i];
+                if (arg == ":::") {
+                    var arg_array = new GenericArray<string> ();
+                    while (i < args.length - 1) {
+                        if (args[i + 1] == ":::" || args[i + 1] == "::::") {
+                            // End of :::
+                            break;
                         }
-                        // stdin is a pipe
-                        string line;
-                        while ((line = stdin.read_line ()) != null) {
-                            array.add (line);
+                        i += 1;
+                        unowned var line = args[i];
+                        line_handle_colsep (line, ref arg_array);
+                    }
+                    add_args (arg_array, ref args_matrix);
+                } else if (arg == "::::") {
+                    // Read from files specified in the following arguments
+                    while (i < args.length - 1) {
+                        if (args[i + 1] == ":::" || args[i + 1] == "::::") {
+                            // End of :::
+                            break;
                         }
-                    } else {
-                        // Use file as input
-                        var stream = FileStream.open (filename, "r");
-                        if (stream == null) {
-                            printerr ("Error opening file: %s\n", filename);
-                            continue;
-                        }
-                        string line;
-                        while ((line = stream.read_line ()) != null) {
-                            array.add (line);
+                        i += 1;
+                        unowned var filename = args[i];
+                        if (filename == "-") {
+                            // Use stdin as input
+                            if (Reporter.isatty (stdin.fileno ())) {
+                                // stdin is a tty, WARNING and ignore
+                                printerr ("Warning: stdin is a tty, ignoring\n");
+                                continue;
+                            }
+                            // stdin is a pipe
+                            string line;
+                            var arg_array = new GenericArray<string> ();
+                            while ((line = stdin.read_line ()) != null) {
+                                line_handle_colsep (line, ref arg_array);
+                            }
+                            add_args (arg_array, ref args_matrix);
+                        } else {
+                            var stream = FileStream.open (filename, "r");
+                            if (stream == null) {
+                                printerr ("Error opening file: %s\n", filename);
+                                continue;
+                            }
+                            string line;
+                            var arg_array = new GenericArray<string> ();
+                            while ((line = stream.read_line ()) != null) {
+                                line_handle_colsep (line, ref arg_array);
+                            }
+                            add_args (arg_array, ref args_matrix);
                         }
                     }
+                } else {
+                    printerr ("OptionError: invalid separator, the command must be in one\n");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        static inline void line_handle_colsep (string line, ref GenericArray<string> arg_array) {
+            /**
+             * Split the line by colsep_regex and add to arg_array
+             */
+            if (colsep_regex != null) {
+                foreach (var part in colsep_regex.split (line)) {
+                    arg_array.add (part);
                 }
             } else {
-                printerr ("OptionError: invalid separator, the command must be in one\n");
-                return false;
+                arg_array.add (line);
             }
-            if (colsep_regex_str != null) {
-                try {
-                    var colsep_regex = new Regex (colsep_regex_str);
-                    var old_array = (owned) array.data;
-                    array.data = {};
-                    foreach (var line in old_array) {
-                        foreach (var part in colsep_regex.split (line)) {
-                            array.add (part);
-                        }
-                    }
-                } catch (RegexError e) {
-                    printerr ("RegexError: %s\n", e.message);
-                    return false;
+        }
+
+        static inline void add_args (GenericArray<string> arg_array, ref GenericArray<GenericArray<string>> args_matrix) {
+            if (args_matrix.length == 0) {
+                // No args in args_matrix, directly add arg_array
+                if (arg_array.length == 0) {
+                    // No args in arg_array, default to " "
+                    arg_array.add (" ");
                 }
+                foreach (unowned var arg in arg_array) {
+                    var arg_item = new GenericArray<string> ();
+                    arg_item.add (arg);
+                    args_matrix.add (arg_item);
+                }
+            } else {
+                if (arg_array.length == 0) {
+                    // No args in arg_array, default to " "
+                    arg_array.add (" ");
+                }
+                var new_args_matrix = new GenericArray<GenericArray<string>> ();
+                foreach (unowned var old_arg_item in args_matrix) {
+                    foreach (unowned var arg in arg_array) {
+                        var new_arg_item = new GenericArray<string> ();
+                        foreach (unowned var old_arg in old_arg_item) {
+                            new_arg_item.add (old_arg);
+                        }
+                        new_arg_item.add (arg);
+                        new_args_matrix.add (new_arg_item);
+                    }
+                }
+                args_matrix = new_args_matrix;
             }
-            args_list = array.data;
-            return true;
         }
 
         static int main (string[] args) {
@@ -139,12 +194,10 @@ namespace Varallel {
   {//}                        Dirname of input line
   {/.}                        Basename of input line without extension
   {#}                         Job index, starting from 1
+  {3} {2.} {4/} {1/.} etc.    Positional replacement strings
   
 For more information, or to report bugs, please visit:
     <https://github.com/wszqkzqk/varallel>");
-    /*
-  {3} {2.} {4/} {1/.} etc.    Positional replacement strings
-    */
             opt_context.add_main_entries (options, null);
             try {
                 opt_context.parse (ref args);
@@ -166,16 +219,16 @@ For more information, or to report bugs, please visit:
             }
 
             string? command;
-            string[]? args_list;
-            if (!parse_nonoption_args (ref args, out command, out args_list)) {
+            GenericArray<GenericArray<string>> args_matrix;
+            if (!parse_nonoption_args (ref args, out command, out args_matrix)) {
                 printerr ("OptionError: invalid command or args\n\n");
                 printerr (opt_context.get_help (true, null));
                 return 1;
-            } else if (command == null || args_list == null) {
+            } else if (command == null || args_matrix == null) {
                 printerr ("OptionError: invalid command or args\n\n");
                 printerr (opt_context.get_help (true, null));
                 return 1;
-            } else if (args_list.length == 0) {
+            } else if (args_matrix.length == 0) {
                 printerr ("OptionError: no input specified\n\n");
                 printerr (opt_context.get_help (true, null));
                 return 1;
@@ -195,7 +248,7 @@ For more information, or to report bugs, please visit:
             try {
                 var manager = new ParallelManager (
                     command,
-                    args_list,
+                    args_matrix,
                     jobs,
                     shell,
                     shell != "n",
