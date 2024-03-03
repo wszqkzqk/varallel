@@ -119,7 +119,7 @@ namespace Varallel {
                         } else {
                             var stream = FileStream.open (filename, "r");
                             if (stream == null) {
-                                printerr ("Error opening file: %s\n", filename);
+                                printerr ("Warning: error opening file `%s'\n", filename);
                                 continue;
                             }
                             string line;
