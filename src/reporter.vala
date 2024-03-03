@@ -172,8 +172,8 @@ namespace Varallel {
         }
 
         public inline void print_progress (uint success_count, uint failure_count) {
-            var prefix = "\rSuccess: %u, Failure: %u, ".printf (success_count, failure_count);
-            var prelength = prefix.length;
+            var prefix = "\rSuccess: %u Failure: %u ".printf (success_count, failure_count);
+            var prelength = prefix.length - 1; // -1 for \r
             if (in_tty) {
                 prefix = "\r".concat (
                     Reporter.EscapeCode.ANSI_BOLD,
@@ -187,7 +187,7 @@ namespace Varallel {
                     "Failure: ",
                     failure_count.to_string (),
                     Reporter.EscapeCode.ANSI_RESET,
-                    ", ");
+                    " ");
             }
             // Only the the effictive length of progressbar is no less than 5, the progressbar will be shown
             var builder = new StringBuilder (prefix);

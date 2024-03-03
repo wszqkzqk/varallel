@@ -40,7 +40,8 @@ Application Options:
   -r, --colsep=EXPRESSION     Regex to split the arguement
   -q, --quiet                 Hide subcommands output
   -s, --shell=SHELL           Manually set SHELL to run the command, set 'n' to disable to use any shell
-  -d, --hide-bar              Hide progress bar
+  --hide-bar                  Hide progress bar
+  --bar                       Show progress bar (Deprecated, it's the default behavior)
 
 Replacements in cammand:
   {}                          Input arguement
@@ -81,16 +82,19 @@ For more information, or to report bugs, please visit:
   * Hide subcommands output.
 * `-s=SHELL` `--shell=SHELL`
   * Manually set SHELL to run the command, set it to `n` to disable to use any shell, and the subcommands will be spawned directly.
-* `-d` `--hide-bar`
+* `--hide-bar`
   * Hide progress bar.
+* ~~`--bar`~~
+  * Show progress bar. (Deprecated, it's the default behavior)
+  * Exclusive with `--hide-bar`.
 
 ### Examples
 
-`Varallel` can read the arguement lists from pipes, files or command line.
+`varallel` can read the arguement lists from pipes, files or command line.
 
 #### Use pipes
 
-`Varallel` can read the arguement lists from pipes.
+`varallel` can read the arguement lists from pipes.
 
 ```bash
 seq 1 6 | varallel echo
@@ -100,7 +104,7 @@ varallel echo < <(seq 3 7)
 
 #### Use command lines
 
-`Varallel` can read the arguement lists from the command line.
+`varallel` can read the arguement lists from the command line.
 
 ```bash
 varallel echo ::: 1 2 3 4 5 6
@@ -109,7 +113,7 @@ varallel 'echo "{.} {/} {#} {//}"' ::: /home/wszqkzqk ./README.md ~/Pictures/Arc
 
 #### Use files
 
-Also, `Varallel` can read the arguement lists from files.
+Also, `varallel` can read the arguement lists from files.
 
 ```bash
 varallel echo :::: example.txt file*.txt

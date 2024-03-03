@@ -28,13 +28,15 @@ namespace Varallel {
         static bool hide_sub_output = false;
         static string? shell = null;
         static bool hide_bar = false;
+        static bool bar = false;
         const OptionEntry[] options = {
             { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref show_version, "Display version number", null },
             { "jobs", 'j', OptionFlags.NONE, OptionArg.INT, ref jobs, "Run n jobs in parallel", "n" },
             { "colsep", 'r', OptionFlags.NONE, OptionArg.STRING, ref colsep_regex_str, "Regex to split the arguement", "EXPRESSION" },
             { "quiet", 'q', OptionFlags.NONE, OptionArg.NONE, ref hide_sub_output, "Hide subcommands output", null },
             { "shell", 's', OptionFlags.NONE, OptionArg.STRING, ref shell, "Manually set SHELL to run the command, set 'n' to disable to use any shell", "SHELL" },
-            { "hide-bar", 'd', OptionFlags.NONE, OptionArg.NONE, ref hide_bar, "Hide progress bar", null},
+            { "hide-bar", '\0', OptionFlags.NONE, OptionArg.NONE, ref hide_bar, "Hide progress bar", null},
+            { "bar", '\0', OptionFlags.NONE, OptionArg.NONE, ref bar, "Show progress bar (Deprecated, it's the default behavior)", null},
             { null }
         };
 
@@ -179,6 +181,17 @@ For more information, or to report bugs, please visit:
                 return 1;
             }
 
+            if (hide_bar) {
+                if (bar) {
+                    printerr ("OptionError: --hide-bar and --bar are mutually exclusive\n");
+                    printerr (opt_context.get_help (true, null));
+                    return 1;
+                }
+                bar = false;
+            } else {
+                bar = true;
+            }
+
             try {
                 var manager = new ParallelManager (
                     command,
@@ -187,14 +200,14 @@ For more information, or to report bugs, please visit:
                     shell,
                     shell != "n",
                     hide_sub_output,
-                    !hide_bar);
+                    bar);
                 manager.run ();
             } catch (ThreadError e) {
                 printerr ("ThreadError: %s\n", e.message);
                 return 1;
             }
 
-            printerr ((!hide_bar) ? "\nAll jobs completed!\n" : "All jobs completed!\n");
+            printerr ((bar) ? "\nAll jobs completed!\n" : "All jobs completed!\n");
             return 0;
         }
     }
