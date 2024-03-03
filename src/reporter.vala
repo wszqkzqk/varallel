@@ -194,7 +194,7 @@ namespace Varallel {
             builder.append (title);
             // 12 is the length of ": [] 100.00%"
             int bar_length = get_console_width () - prelength - title.length - 12;
-            if (in_tty || bar_length >= 5) {
+            if (in_tty && bar_length >= 5) {
                 builder.append (": [");
                 var fill_length = (int) (percentage / 100.0 * bar_length);
                 builder.append (Reporter.EscapeCode.ANSI_INVERT);
