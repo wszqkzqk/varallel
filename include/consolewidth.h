@@ -24,21 +24,26 @@
 __declspec(dllexport) extern inline int get_console_width () {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     int columns;
-  
-    int ret = GetConsoleScreenBufferInfo(GetStdHandle(STD_ERROR_HANDLE), &csbi);
-    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    return (int) columns;
+    // GetConsoleScreenBufferInfo will return 0 if it FAILS
+    int success = GetConsoleScreenBufferInfo(GetStdHandle(STD_ERROR_HANDLE), &csbi);
+    if (success) {
+        columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        return (int) columns;
+    } else {
+        return 0;
+    }
 }
 #else
 #include <sys/ioctl.h>
 #include <stdio.h>
 extern inline int get_console_width () {
     struct winsize w;
-    if (!ioctl (fileno (stderr), TIOCGWINSZ, &w)) {
-        return (int) w.ws_col;
-    } else {
-        // if ioctl fails, return 0
+    // ioctl will return 0 if it SUCCEEDS
+    int fail  = ioctl (fileno (stderr), TIOCGWINSZ, &w);
+    if (fail) {
         return 0;
+    } else {
+        return w.ws_col;
     }
 }
 #endif
