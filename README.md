@@ -92,6 +92,15 @@ For more information, or to report bugs, please visit:
   * Show progress bar. (Default behavior)
   * If both `--hide-bar` and `--bar` are provided, the program will take the last option.
 
+* If there are more than one `:::` or `::::` in the command line, the replacement strings will be the Cartesian product of the argument lists.
+  * Example:
+    * `varallel echo ::: 1 2 ::: a b`
+    * The command will be run with the following arguments:
+      * `echo 1 a`
+      * `echo 1 b`
+      * `echo 2 a`
+      * `echo 2 b`
+
 ### Examples
 
 `varallel` can read the argument lists from pipes, files or command line.
