@@ -41,7 +41,7 @@ Application Options:
   -q, --quiet                 Hide subcommands output
   -s, --shell=SHELL           Manually set SHELL to run the command, set 'n' to disable to use any shell
   --hide-bar                  Hide progress bar
-  --bar                       Show progress bar (Deprecated, it's the default behavior)
+  --bar                       Show progress bar (Default behavior)
 
 Replacements in cammand:
   {}                          Input argument
@@ -87,9 +87,10 @@ For more information, or to report bugs, please visit:
   * Manually set SHELL to run the command, set it to `n` to disable to use any shell, and the subcommands will be spawned directly.
 * `--hide-bar`
   * Hide progress bar.
-* ~~`--bar`~~
-  * Show progress bar. (Deprecated, it's the default behavior)
-  * Exclusive with `--hide-bar`.
+  * If both `--hide-bar` and `--bar` are provided, the program will take the last option.
+* `--bar`
+  * Show progress bar. (Default behavior)
+  * If both `--hide-bar` and `--bar` are provided, the program will take the last option.
 
 ### Examples
 

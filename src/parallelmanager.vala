@@ -87,7 +87,9 @@ namespace Varallel {
                         if (!hide_sub_output) {
                             if ((subprsc.error != null && subprsc.error != "")
                             || (subprsc.output != null && subprsc.output != "")) {
-                                stderr.putc ('\n'); // Add a newline to separate the output of different commands
+                                if (show_progress_bar) {
+                                    stderr.putc ('\n'); // Add a newline to separate the output of different commands
+                                }
                                 printerr ("%s", subprsc.error);
                                 print ("%s", subprsc.output);
                             }
