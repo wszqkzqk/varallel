@@ -72,9 +72,9 @@ namespace Varallel {
                 string line;
                 var arg_array = new GenericArray<string> ();
                 while ((line = stdin.read_line ()) != null) {
-                    line_handle_colsep (line, ref arg_array);
+                    line_handle_colsep (line, arg_array);
                 }
-                add_args (arg_array, ref args_matrix);
+                add_args (arg_array, args_matrix);
                 return true;
             }
 
@@ -89,9 +89,9 @@ namespace Varallel {
                         }
                         i += 1;
                         unowned var line = args[i];
-                        line_handle_colsep (line, ref arg_array);
+                        line_handle_colsep (line, arg_array);
                     }
-                    add_args (arg_array, ref args_matrix);
+                    add_args (arg_array, args_matrix);
                 } else if (arg == "::::") {
                     // Read from files specified in the following arguments
                     while (i < args.length - 1) {
@@ -112,9 +112,9 @@ namespace Varallel {
                             string line;
                             var arg_array = new GenericArray<string> ();
                             while ((line = stdin.read_line ()) != null) {
-                                line_handle_colsep (line, ref arg_array);
+                                line_handle_colsep (line, arg_array);
                             }
-                            add_args (arg_array, ref args_matrix);
+                            add_args (arg_array, args_matrix);
                         } else {
                             var stream = FileStream.open (filename, "r");
                             if (stream == null) {
@@ -124,9 +124,9 @@ namespace Varallel {
                             string line;
                             var arg_array = new GenericArray<string> ();
                             while ((line = stream.read_line ()) != null) {
-                                line_handle_colsep (line, ref arg_array);
+                                line_handle_colsep (line, arg_array);
                             }
-                            add_args (arg_array, ref args_matrix);
+                            add_args (arg_array, args_matrix);
                         }
                     }
                 } else {
@@ -138,7 +138,7 @@ namespace Varallel {
             return true;
         }
 
-        static inline void line_handle_colsep (string line, ref GenericArray<string> arg_array) {
+        static inline void line_handle_colsep (string line, GenericArray<string> arg_array) {
             /**
              * Split the line by colsep_regex and add to arg_array
              */
@@ -151,7 +151,7 @@ namespace Varallel {
             }
         }
 
-        static inline void add_args (GenericArray<string> arg_array, ref GenericArray<GenericArray<string>> args_matrix) {
+        static inline void add_args (GenericArray<string> arg_array, GenericArray<GenericArray<string>> args_matrix) {
             if (args_matrix.length == 0) {
                 // No args in args_matrix, directly add arg_array
                 if (arg_array.length == 0) {
@@ -179,7 +179,8 @@ namespace Varallel {
                         new_args_matrix.add (new_arg_item);
                     }
                 }
-                args_matrix = new_args_matrix;
+                // Replace args_matrix's old data with new_args_matrix's data
+                args_matrix.data = (owned) new_args_matrix.data;
             }
         }
 
