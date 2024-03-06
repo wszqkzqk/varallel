@@ -154,7 +154,23 @@ namespace Varallel {
                     continue;
                 }
             }
-        }        
+        }
+        
+        public inline void print_commands () {
+            /**
+             * print_commands:
+             * 
+             * Print the commands to be executed.
+             */
+            for (uint i = 0; i < original_args.length; i += 1) {
+                var command = parse_single_command (original_command, original_args[i], i);
+                if (command == null) {
+                    printerr ("Failed to process command: %s\n", original_command);
+                    continue;
+                }
+                print ("%s\n", command);
+            }
+        }
 
         static inline string? parse_single_command (string command, GenericArray<string> single_arg_list, uint index) {
             /**
@@ -165,10 +181,6 @@ namespace Varallel {
              *
              * Process a single command.
              */
-            string? arg_no_ext = null;
-            string? arg_basename = null;
-            string? arg_dirname = null;
-            string? arg_basename_no_ext = null;
             try {
                 var ret = slot_in_command.replace_eval (
                     command,
@@ -177,97 +189,127 @@ namespace Varallel {
                     0,
                     (match_info, builder) => {
                         var position_str = match_info.fetch (1);
-                        var old_center = match_info.fetch (2);
-                        string single_arg;
-                        int position;
-                        if (position_str == null
-                            || position_str == ""
-                            || (position = int.parse (position_str)) == 0) {
-                            // No opsition is specified or the position is 0
-                            // Use all the arguments
-                            single_arg = string.joinv (" ", single_arg_list.data);
-                        } else {
-                            // Use the specified position
+                        var indicator = match_info.fetch (2);
+                        // position == 0 means using all args in single_arg_list
+                        // position == 0 means using single_arg_list[position]
+                        int position = 0;
+                        unowned string single_arg = null;
+
+                        if (position_str != null) {
                             position = int.parse (position_str);
-                            if (position > single_arg_list.length) {
-                                // The position is out of range
-                                // Feature: If the position is out of range,
-                                // directly return (means to replace it with "")
-                                // equal to remove the slot (instead of ignore)
-                                return false;
-                            }
+                        }
+                        if (position > single_arg_list.length) {
+                            // The position is out of range
+                            // Feature: If the position is out of range,
+                            // directly return (means to replace it with "")
+                            // equal to remove the slot (instead of ignore)
+                            return false;
+                        } else if (position > 0) {
                             single_arg = single_arg_list[position - 1];
                         }
-                        if (old_center == null) {
+
+                        if (indicator == null) {
                             // {}: Input argument
-                            builder.append (single_arg);
+                            if (position == 0) {
+                                builder.append (string.joinv (" ", single_arg_list.data));
+                            } else {
+                                builder.append (single_arg);
+                            }
                             return false;
                         }
 
-                        switch (old_center.length) {
+                        switch (indicator.length) {
                         case 0:
                             // {}: Input argument
-                            builder.append (single_arg);
+                            if (position == 0) {
+                                builder.append (string.joinv (" ", single_arg_list.data));
+                            } else {
+                                builder.append (single_arg);
+                            }
                             return false;
                         case 1:
-                            switch (old_center[0]) {
-                            case '/':
-                                // {/}: Basename of input line
-                                if (arg_basename == null) {
-                                    arg_basename = Path.get_basename (single_arg);
-                                }
-                                builder.append (arg_basename);
-                                break;
+                            switch (indicator[0]) {
                             case '#':
                                 // {#}: Job index
                                 // The job index is 1-based, so we need to add 1
                                 builder.append ((index + 1).to_string ());
-                                break;
+                                return false;
+                            case '/':
+                                // {/}: Basename of input line
+                                if (position == 0) {
+                                    for (uint i = 0; i < single_arg_list.length; i += 1) {
+                                        if (i != 0) {
+                                            builder.append_c (' ');
+                                        }
+                                        builder.append (Path.get_basename (single_arg_list[i]));
+                                    }
+                                } else {
+                                    builder.append (Path.get_basename (single_arg));
+                                }
+                                return false;
                             case '.':
                                 // {.}: Input argument without extension
-                                if (arg_no_ext == null) {
-                                    arg_no_ext = get_name_without_extension (single_arg);
+                                if (position == 0) {
+                                    for (uint i = 0; i < single_arg_list.length; i += 1) {
+                                        if (i != 0) {
+                                            builder.append_c (' ');
+                                        }
+                                        builder.append (get_name_without_extension (single_arg_list[i]));
+                                    }
+                                } else {
+                                    builder.append (get_name_without_extension (single_arg));
                                 }
-                                builder.append (arg_no_ext);
-                                break;
+                                return false;
                             default:
-                                printerr ("Unknown slot: {%s}\n", old_center);
-                                builder.append (single_arg);
                                 break;
                             }
                             break;
                         case 2:
                             // May be {//} or {/.}
-                            if (old_center[1] == '/') {
+                            switch (indicator[1]) {
+                            case '/':
                                 // {//}: Dirname of input line
-                                if (arg_dirname == null) {
-                                    arg_dirname = Path.get_dirname (single_arg);
+                                if (position == 0) {
+                                    for (uint i = 0; i < single_arg_list.length; i += 1) {
+                                        if (i != 0) {
+                                            builder.append_c (' ');
+                                        }
+                                        builder.append (Path.get_dirname (single_arg_list[i]));
+                                    }
+                                } else {
+                                    builder.append (Path.get_dirname (single_arg));
                                 }
-                                builder.append (arg_dirname);
-                            } else if (old_center[1] == '.') {
+                                return false;
+                            case '.':
                                 // {/.}: Basename without extension of input line
-                                if (arg_basename_no_ext == null) {
-                                    if (arg_basename == null) {
-                                        arg_basename = Path.get_basename (single_arg);
+                                if (position == 0) {
+                                    for (uint i = 0; i < single_arg_list.length; i += 1) {
+                                        if (i != 0) {
+                                            builder.append_c (' ');
+                                        }
+                                        builder.append (
+                                            get_name_without_extension (Path.get_basename (single_arg_list[i]))
+                                        );
                                     }
-                                    var pos = arg_basename.last_index_of_char ('.');
-                                    if (pos == -1) {
-                                        arg_basename_no_ext = arg_basename;
-                                    } else {
-                                        arg_basename_no_ext = arg_basename[:pos];
-                                    }
+                                } else {
+                                    builder.append (
+                                        get_name_without_extension (Path.get_basename (single_arg))
+                                    );
                                 }
-                                builder.append (arg_basename_no_ext);
-                            } else {
-                                printerr ("Unknown slot: {%s}\n", old_center);
-                                builder.append (single_arg);
+                                return false;
+                            default:
+                                break;
                             }
                             break;
                         default:
-                            printerr ("Unknown slot: {%s}\n", old_center);
-                            builder.append (single_arg);
                             break;
                         }
+                        printerr ("Unknown slot: {%s}\n", indicator);
+                                if (position == 0) {
+                                    builder.append (string.joinv (" ", single_arg_list.data));
+                                } else {
+                                    builder.append (single_arg);
+                                }
                         return false;
                     }
                 );

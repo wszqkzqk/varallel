@@ -28,6 +28,7 @@ namespace Varallel {
         static bool hide_sub_output = false;
         static string? shell = null;
         static bool bar = true;
+        static bool print_only = false;
         static Regex colsep_regex = null;
         const OptionEntry[] options = {
             { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref show_version, "Display version number", null },
@@ -37,6 +38,7 @@ namespace Varallel {
             { "shell", 's', OptionFlags.NONE, OptionArg.STRING, ref shell, "Manually set SHELL to run the command, set 'n' to disable to use any shell", "SHELL" },
             { "hide-bar", '\0', OptionFlags.REVERSE, OptionArg.NONE, ref bar, "Hide progress bar", null},
             { "bar", '\0', OptionFlags.NONE, OptionArg.NONE, ref bar, "Show progress bar (Default behavior)", null},
+            { "print-only", '\0', OptionFlags.NONE, OptionArg.NONE, ref print_only, "Only print the command but not run", null},
             { null }
         };
 
@@ -245,13 +247,17 @@ For more information, or to report bugs, please visit:
                     shell != "n",
                     hide_sub_output,
                     bar);
-                manager.run ();
+                if (print_only) {
+                    manager.print_commands ();
+                } else {
+                    manager.run ();
+                }
             } catch (ThreadError e) {
                 printerr ("ThreadError: %s\n", e.message);
                 return 1;
             }
 
-            printerr ((bar) ? "\nAll jobs completed!\n" : "All jobs completed!\n");
+            printerr ((bar && (!print_only)) ? "\nAll jobs completed!\n" : "All jobs completed!\n");
             return 0;
         }
     }

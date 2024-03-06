@@ -99,9 +99,11 @@ namespace Varallel {
         }
 
         public static bool isatty (int fd) {
-            Module module = Module.open (null, ModuleFlags.LAZY);
-            if (module == null) {
-                printerr ("Error opening libc\n");
+            Module module;
+            try {
+                module = new Module (null, ModuleFlags.LAZY);
+            } catch (ModuleError e) {
+                printerr ("ModuleError: %s\n", e.message);
                 // Default to true for stdin to avid IO blocking of tty's stdin
                 // Default to false for other file descriptors
                 return (fd == stdin.fileno ()) ? true : false;
