@@ -191,7 +191,7 @@ namespace Varallel {
                         var position_str = match_info.fetch (1);
                         var indicator = match_info.fetch (2);
                         // position == 0 means using all args in single_arg_list
-                        // position == 0 means using single_arg_list[position]
+                        // position > 0 means using single_arg_list[position]
                         int position = 0;
                         unowned string single_arg = null;
 
