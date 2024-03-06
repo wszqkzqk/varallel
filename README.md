@@ -42,6 +42,7 @@ Application Options:
   -s, --shell=SHELL           Manually set SHELL to run the command, set 'n' to disable to use any shell
   --hide-bar                  Hide progress bar
   --bar                       Show progress bar (Default behavior)
+  --print-only                Only print the command but not run
 
 Replacements in cammand:
   {}                          Input argument
@@ -91,6 +92,8 @@ For more information, or to report bugs, please visit:
 * `--bar`
   * Show progress bar. (Default behavior)
   * If both `--hide-bar` and `--bar` are provided, the program will take the last option.
+* `--print-only`
+  * Only print the command but not run.
 
 * If there are more than one `:::` or `::::` in the command line, the replacement strings will be the Cartesian product of the argument lists.
   * Example:
