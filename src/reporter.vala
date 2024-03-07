@@ -20,7 +20,7 @@
  */
 
 namespace Varallel {
-    [CCode (cheader_filename = "../include/bindings.h", cname = "get_console_width")]
+    [CCode (cheader_filename = "bindings.h", cname = "get_console_width")]
     public extern int get_console_width ();
 
     [Compact (opaque = true)]

@@ -9,4 +9,6 @@ gobject = dependency('gobject-2.0')
 gio = dependency('gio-2.0')
 gmodule = dependency('gmodule-2.0')
 
+incdir = include_directories('include')
+
 subdir('src')

@@ -1,7 +1,7 @@
 version_file = vcs_tag(
    command: ['git', 'describe', '--tags'],
      input: 'version.vala.in',
-    output: 'version.vala'
+    output: 'version.vala',
 )
 
 executable_sources = [
@@ -9,17 +9,18 @@ executable_sources = [
   'parallelmanager.vala',
   'main.vala',
   'reporter.vala',
-  version_file
+  version_file,
 ]
 
 basic_deps = [
   glib,
   gobject,
   gio,
-  gmodule
+  gmodule,
 ]
 
 executable('varallel', executable_sources,
   dependencies: basic_deps,
   install: true,
+  include_directories: incdir,
 )
