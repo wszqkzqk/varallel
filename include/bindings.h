@@ -1,4 +1,4 @@
-/* consolewidth.h
+/* bindings.h
  *
  * Copyright 2024 Zhou Qiankang <wszqkzqk@qq.com>
  *
