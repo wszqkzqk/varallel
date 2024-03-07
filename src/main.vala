@@ -146,7 +146,7 @@ namespace Varallel {
              */
             if (colsep_regex != null) {
                 foreach (var part in colsep_regex.split (line)) {
-                    arg_array.add (part);
+                    arg_array.add ((owned) part);
                 }
             } else {
                 arg_array.add (line);
