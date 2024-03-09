@@ -1,4 +1,4 @@
-/* bindings.h
+/* bindings.c
  *
  * Copyright 2024 Zhou Qiankang <wszqkzqk@qq.com>
  *
@@ -19,6 +19,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
+#include <glib.h>
+
 #if !defined(VALA_EXTERN)
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define VALA_EXTERN __declspec(dllexport) extern
@@ -31,6 +33,8 @@
 
 #if defined(_WIN32)
 #include <windows.h>
+#include <io.h>
+
 VALA_EXTERN inline int get_console_width () {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     int columns;
@@ -43,9 +47,15 @@ VALA_EXTERN inline int get_console_width () {
         return 0;
     }
 }
+
+VALA_EXTERN inline gboolean is_a_tty (int fd) {
+    return (gboolean) _isatty (fd) != 0;
+}
 #else
 #include <sys/ioctl.h>
 #include <stdio.h>
+#include <unistd.h>
+
 VALA_EXTERN inline int get_console_width () {
     struct winsize w;
     // ioctl will return 0 if it SUCCEEDS
@@ -55,5 +65,9 @@ VALA_EXTERN inline int get_console_width () {
     } else {
         return w.ws_col;
     }
+}
+
+VALA_EXTERN inline gboolean is_a_tty (int fd) {
+    return (gboolean) isatty (fd) != 0;
 }
 #endif
