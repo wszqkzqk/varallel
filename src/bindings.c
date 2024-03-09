@@ -1,4 +1,4 @@
-/* bindings.h
+/* bindings.c
  *
  * Copyright 2024 Zhou Qiankang <wszqkzqk@qq.com>
  *
@@ -31,6 +31,8 @@
 
 #if defined(_WIN32)
 #include <windows.h>
+#include <io.h>
+
 VALA_EXTERN inline int get_console_width () {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     int columns;
@@ -43,9 +45,15 @@ VALA_EXTERN inline int get_console_width () {
         return 0;
     }
 }
+
+VALA_EXTERN inline int is_a_tty (int fd) {
+    return _isatty (fd) != 0;
+}
 #else
 #include <sys/ioctl.h>
 #include <stdio.h>
+#include <unistd.h>
+
 VALA_EXTERN inline int get_console_width () {
     struct winsize w;
     // ioctl will return 0 if it SUCCEEDS
@@ -55,5 +63,9 @@ VALA_EXTERN inline int get_console_width () {
     } else {
         return w.ws_col;
     }
+}
+
+VALA_EXTERN inline int is_a_tty (int fd) {
+    return isatty (fd) != 0;
 }
 #endif

@@ -20,14 +20,17 @@
  */
 
 namespace Varallel {
-    [CCode (cheader_filename = "bindings.h", cname = "get_console_width")]
-    public extern int get_console_width ();
+    [CCode (cname = "get_console_width")]
+    extern int get_console_width ();
 
     [Compact (opaque = true)]
     public class Reporter {
         [CCode (has_target = false)]
         delegate int AttyFunc (int fd);
         static bool? in_tty = null;
+
+        [CCode (cname = "is_a_tty")]
+        public extern static bool isatty (int fd);
 
         public enum EscapeCode {
             RESET,
@@ -96,31 +99,6 @@ namespace Varallel {
                     return ANSI_RESET;
                 }
             }
-        }
-
-        public static bool isatty (int fd) {
-            Module module;
-            try {
-                module = new Module (null, ModuleFlags.LAZY);
-            } catch (ModuleError e) {
-                printerr ("ModuleError: %s\n", e.message);
-                // Default to true for stdin to avid IO blocking of tty's stdin
-                // Default to false for other file descriptors
-                return (fd == stdin.fileno ()) ? true : false;
-            }
-            void* _func;
-            module.symbol ("isatty", out _func);
-            if (_func == null) {
-                module.symbol ("_isatty", out _func);
-                if (_func == null) {
-                    printerr ("Error getting isatty/_isatty\n");
-                    // Default to true for stdin to avid IO blocking of tty's stdin
-                    // Default to false for other file descriptors
-                    return (fd == stdin.fileno ()) ? true : false;
-                }
-            }
-            AttyFunc? func = (AttyFunc) _func;
-            return (func (fd) != 0);
         }
 
         public static inline void report_failed_command (string command, int status) {
