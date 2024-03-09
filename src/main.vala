@@ -224,11 +224,8 @@ For more information, or to report bugs, please visit:
 
             string? command;
             GenericArray<GenericArray<string>> args_matrix;
-            if (!parse_nonoption_args (ref args, out command, out args_matrix)) {
-                printerr ("OptionError: invalid command or args\n\n");
-                printerr (opt_context.get_help (true, null));
-                return 1;
-            } else if (command == null || args_matrix == null) {
+            if ((!parse_nonoption_args (ref args, out command, out args_matrix))
+            || command == null || args_matrix == null) {
                 printerr ("OptionError: invalid command or args\n\n");
                 printerr (opt_context.get_help (true, null));
                 return 1;
