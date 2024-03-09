@@ -19,6 +19,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
+#include <glib.h>
+
 #if !defined(VALA_EXTERN)
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define VALA_EXTERN __declspec(dllexport) extern
@@ -46,7 +48,7 @@ VALA_EXTERN inline int get_console_width () {
     }
 }
 
-VALA_EXTERN inline int is_a_tty (int fd) {
+VALA_EXTERN inline gboolean is_a_tty (int fd) {
     return _isatty (fd) != 0;
 }
 #else
@@ -65,7 +67,7 @@ VALA_EXTERN inline int get_console_width () {
     }
 }
 
-VALA_EXTERN inline int is_a_tty (int fd) {
+VALA_EXTERN inline gboolean is_a_tty (int fd) {
     return isatty (fd) != 0;
 }
 #endif
