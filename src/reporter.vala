@@ -67,33 +67,33 @@ namespace Varallel {
 
             public inline unowned string to_string () {
                 switch (this) {
-                case EscapeCode.RESET:
+                case RESET:
                     return ANSI_RESET;
-                case EscapeCode.RED:
+                case RED:
                     return ANSI_RED;
-                case EscapeCode.GREEN:
+                case GREEN:
                     return ANSI_GREEN;
-                case EscapeCode.YELLOW:
+                case YELLOW:
                     return ANSI_YELLOW;
-                case EscapeCode.BLUE:
+                case BLUE:
                     return ANSI_BLUE;
-                case EscapeCode.MAGENTA:
+                case MAGENTA:
                     return ANSI_MAGENTA;
-                case EscapeCode.CYAN:
+                case CYAN:
                     return ANSI_CYAN;
-                case EscapeCode.WHITE:
+                case WHITE:
                     return ANSI_WHITE;
-                case EscapeCode.BOLD:
+                case BOLD:
                     return ANSI_BOLD;
-                case EscapeCode.UNDERLINE:
+                case UNDERLINE:
                     return ANSI_UNDERLINE;
-                case EscapeCode.BLINK:
+                case BLINK:
                     return ANSI_BLINK;
-                case EscapeCode.DIM:
+                case DIM:
                     return ANSI_DIM;
-                case EscapeCode.HIDDEN:
+                case HIDDEN:
                     return ANSI_HIDDEN;
-                case EscapeCode.INVERT:
+                case INVERT:
                     return ANSI_INVERT;
                 default:
                     return ANSI_RESET;
