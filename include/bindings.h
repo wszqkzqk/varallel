@@ -53,13 +53,12 @@ static inline gboolean is_a_tty (int fd) {
 }
 #else
 #include <sys/ioctl.h>
-#include <stdio.h>
 #include <unistd.h>
 
 static inline int get_console_width () {
     struct winsize w;
     // ioctl will return 0 if it SUCCEEDS
-    int fail  = ioctl (fileno (stderr), TIOCGWINSZ, &w);
+    int fail  = ioctl (STDERR_FILENO, TIOCGWINSZ, &w);
     if (fail) {
         return 0;
     } else {
