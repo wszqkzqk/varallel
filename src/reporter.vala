@@ -20,7 +20,7 @@
  */
 
 namespace Varallel {
-    [CCode (cname = "get_console_width")]
+    [CCode (cheader_filename = "bindings.h", cname = "get_console_width")]
     extern int get_console_width ();
 
     [Compact (opaque = true)]
@@ -29,7 +29,7 @@ namespace Varallel {
         delegate int AttyFunc (int fd);
         static bool? in_tty = null;
 
-        [CCode (cname = "is_a_tty")]
+        [CCode (cheader_filename = "bindings.h", cname = "is_a_tty")]
         public extern static bool isatty (int fd);
 
         public enum EscapeCode {

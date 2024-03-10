@@ -1,4 +1,4 @@
-/* bindings.c
+/* bindings.h
  *
  * Copyright 2024 Zhou Qiankang <wszqkzqk@qq.com>
  *
@@ -35,7 +35,7 @@
 #include <windows.h>
 #include <io.h>
 
-VALA_EXTERN inline int get_console_width () {
+static inline int get_console_width () {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     int columns;
     // GetConsoleScreenBufferInfo will return 0 if it FAILS
@@ -48,7 +48,7 @@ VALA_EXTERN inline int get_console_width () {
     }
 }
 
-VALA_EXTERN inline gboolean is_a_tty (int fd) {
+static inline gboolean is_a_tty (int fd) {
     return (gboolean) (_isatty (fd) != 0);
 }
 #else
@@ -56,7 +56,7 @@ VALA_EXTERN inline gboolean is_a_tty (int fd) {
 #include <stdio.h>
 #include <unistd.h>
 
-VALA_EXTERN inline int get_console_width () {
+static inline int get_console_width () {
     struct winsize w;
     // ioctl will return 0 if it SUCCEEDS
     int fail  = ioctl (fileno (stderr), TIOCGWINSZ, &w);
@@ -67,7 +67,7 @@ VALA_EXTERN inline int get_console_width () {
     }
 }
 
-VALA_EXTERN inline gboolean is_a_tty (int fd) {
+static inline gboolean is_a_tty (int fd) {
     return (gboolean) (isatty (fd) != 0);
 }
 #endif
