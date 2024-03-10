@@ -126,7 +126,7 @@ namespace Varallel {
         string title;
         double percentage = 0.0;
         int total_steps;
-        int current_step;
+        int current_step = 0;
         char fill_char;
         char empty_char;
         bool in_tty;
@@ -137,7 +137,6 @@ namespace Varallel {
                             char empty_char = '-') {
             this.title = title;
             this.total_steps = total_steps;
-            this.current_step = 0;
             this.fill_char = fill_char;
             this.empty_char = empty_char;
             this.in_tty = Reporter.isatty (stderr.fileno ());
@@ -152,21 +151,27 @@ namespace Varallel {
         }
 
         public inline void print_progress (uint success_count, uint failure_count) {
+            // The actual length of the prefix is the length of UNCOLORED prefix
+            // ANSI escapecode should not be counted
             var prefix = "\rSuccess: %u Failure: %u ".printf (success_count, failure_count);
             var prelength = prefix.length - 1; // -1 for \r
             if (in_tty) {
+                // Optimized for string literal concatenation:
+                // Use `+` to concatenate string literals
+                // so that the compiler can optimize it to a single string literal at compile time
+                // But still use `concat` to concatenate non-literal strings, use `,` to split args
                 prefix = "\r".concat (
-                    Reporter.EscapeCode.ANSI_BOLD,
-                    Reporter.EscapeCode.ANSI_GREEN,
+                    Reporter.EscapeCode.ANSI_BOLD +
+                    Reporter.EscapeCode.ANSI_GREEN +
                     "Success: ",
                     success_count.to_string (),
-                    Reporter.EscapeCode.ANSI_RESET,
-                    " ",
-                    Reporter.EscapeCode.ANSI_BOLD,
-                    Reporter.EscapeCode.ANSI_RED,
+                    Reporter.EscapeCode.ANSI_RESET +
+                    " " +
+                    Reporter.EscapeCode.ANSI_BOLD +
+                    Reporter.EscapeCode.ANSI_RED +
                     "Failure: ",
                     failure_count.to_string (),
-                    Reporter.EscapeCode.ANSI_RESET,
+                    Reporter.EscapeCode.ANSI_RESET +
                     " ");
             }
             // Only the the effictive length of progressbar is no less than 5, the progressbar will be shown
