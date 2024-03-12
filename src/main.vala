@@ -54,7 +54,7 @@ namespace Varallel {
 
             if (colsep_regex_str != null && colsep_regex == null) {
                 try {
-                    colsep_regex = new Regex (colsep_regex_str);
+                    colsep_regex = new Regex (colsep_regex_str, RegexCompileFlags.OPTIMIZE);
                 } catch (RegexError e) {
                     printerr ("RegexError: %s\n", e.message);
                     return false;
