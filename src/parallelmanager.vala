@@ -32,8 +32,8 @@ namespace Varallel {
         int jobs = 0;
         string? shell = null;
         string shell_args = "-c";
-        static Regex slot_in_command = /\{([0-9]*)(\/|\.|\/\.|\/\/|#)?\}/;
-        ProgressBar? progress_bar = null;
+        static Regex slot_in_command = null;
+        ProgressBar progress_bar = null;
         public bool show_progress_bar = false;
         Mutex mutex = Mutex ();
         bool hide_sub_output = false;
@@ -58,6 +58,15 @@ namespace Varallel {
              *
              * Create a new ParallelManager instance.
              */
+            if (slot_in_command == null) {
+                try {
+                    slot_in_command = new Regex (
+                        """\{([0-9]*)(\/|\.|\/\.|\/\/|#)?\}""", 
+                        RegexCompileFlags.OPTIMIZE);
+                } catch {
+                    assert_not_reached ();
+                }
+            }
             this.original_args = original_args;
             this.original_command = original_command;
             // if jobs is 0, use the number of processors
