@@ -74,7 +74,7 @@ namespace Varallel {
                 string line;
                 var arg_array = new GenericArray<string> ();
                 while ((line = stdin.read_line ()) != null) {
-                    line_handle_colsep (line, arg_array);
+                    handle_line_colsep (line, arg_array);
                 }
                 add_args (arg_array, args_matrix);
                 return true;
@@ -91,7 +91,7 @@ namespace Varallel {
                         }
                         i += 1;
                         unowned var line = args[i];
-                        line_handle_colsep (line, arg_array);
+                        handle_line_colsep (line, arg_array);
                     }
                     add_args (arg_array, args_matrix);
                 } else if (arg == "::::") {
@@ -114,7 +114,7 @@ namespace Varallel {
                             string line;
                             var arg_array = new GenericArray<string> ();
                             while ((line = stdin.read_line ()) != null) {
-                                line_handle_colsep (line, arg_array);
+                                handle_line_colsep (line, arg_array);
                             }
                             add_args (arg_array, args_matrix);
                         } else {
@@ -126,7 +126,7 @@ namespace Varallel {
                             string line;
                             var arg_array = new GenericArray<string> ();
                             while ((line = stream.read_line ()) != null) {
-                                line_handle_colsep (line, arg_array);
+                                handle_line_colsep (line, arg_array);
                             }
                             add_args (arg_array, args_matrix);
                         }
@@ -140,7 +140,7 @@ namespace Varallel {
             return true;
         }
 
-        static inline void line_handle_colsep (string line, GenericArray<string> arg_array) {
+        static inline void handle_line_colsep (string line, GenericArray<string> arg_array) {
             /**
              * Split the line by colsep_regex and add to arg_array
              */
