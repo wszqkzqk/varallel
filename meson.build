@@ -11,4 +11,8 @@ gmodule = dependency('gmodule-2.0')
 
 incdir = include_directories('include')
 
+if target_machine.system() == 'windows'
+  add_project_arguments('-D', 'WINDOWS', language: 'vala')
+endif
+
 subdir('src')
