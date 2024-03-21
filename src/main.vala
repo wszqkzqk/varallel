@@ -42,7 +42,7 @@ namespace Varallel {
             { null }
         };
 
-        public static bool parse_nonoption_args (ref string[] args,
+        public static bool parse_nonoption_args ([CCode (array_length = false, array_null_terminated = true)] ref string[] args,
                                                  out string? command,
                                                  out GenericArray<GenericArray<string>> args_matrix) {
             command = null;
@@ -221,20 +221,13 @@ For more information, or to report bugs, please visit:
                 return 0;
             }
 
-            if (args.length <= 1) {
-                printerr ("OptionError: no command specified\n\n");
-                printerr (opt_context.get_help (true, null));
-                return 1;
-            }
-
             string? command;
             GenericArray<GenericArray<string>> args_matrix;
-            if ((!parse_nonoption_args (ref args, out command, out args_matrix))
-            || command == null || args_matrix == null) {
+            if ((!parse_nonoption_args (ref args, out command, out args_matrix))) {
                 printerr ("OptionError: invalid command or args\n\n");
                 printerr (opt_context.get_help (true, null));
                 return 1;
-            } else if (args_matrix.length == 0) {
+            } else if (args_matrix == null || args_matrix.length == 0) {
                 printerr ("OptionError: no input specified\n\n");
                 printerr (opt_context.get_help (true, null));
                 return 1;
