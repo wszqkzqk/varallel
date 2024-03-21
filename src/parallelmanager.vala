@@ -20,8 +20,6 @@
  */
 
 namespace Varallel {
-    public const bool IS_WINDOWS = (Path.DIR_SEPARATOR == '\\');
-
     public class ParallelManager {
         /**
          * ParallelManager is a class to manage parallel execution of commands.
@@ -345,13 +343,15 @@ namespace Varallel {
              */
             var last_dot = filename.last_index_of_char ('.');
             var last_separator = filename.last_index_of_char (Path.DIR_SEPARATOR);
-            if (IS_WINDOWS) {
+#if WINDOWS
+            {
                 // Windows can also use / as the separator
                 var last_slash = filename.last_index_of_char ('/');
                 if (last_slash > last_separator) {
                     last_separator = last_slash;
                 }
             }
+#endif
             if (last_dot == -1 || last_dot < last_separator) {
                 return filename;
             } else {
@@ -362,25 +362,25 @@ namespace Varallel {
         inline void choose_shell (string? shell) {
             if (shell != null) {
                 // if shell is not null, use it
-                if (IS_WINDOWS) {
-                    this.shell = shell.ascii_down ();
-                    // if the shell is cmd or cmd.exe, use /c as the shell_args
-                    if (this.shell.has_suffix ("cmd") || this.shell.has_suffix ("cmd.exe")) {
-                        this.shell_args = "/c";
-                    }
-                } else {
-                    this.shell = shell;
+#if WINDOWS
+                this.shell = shell.ascii_down ();
+                // if the shell is cmd or cmd.exe, use /c as the shell_args
+                if (this.shell.has_suffix ("cmd") || this.shell.has_suffix ("cmd.exe")) {
+                    this.shell_args = "/c";
                 }
+#else
+                this.shell = shell;
+#endif
             } else {
-                if (!IS_WINDOWS) {
-                    // if shell is null and the system is not windows, use the SHELL environment variable
-                    this.shell = Environment.get_variable("SHELL");
-                    // if the SHELL environment variable is not set, use /bin/sh
-                    if (this.shell == null) {
-                        this.shell = Environment.find_program_in_path ("sh");
-                    }
+#if !WINDOWS
+                // if shell is null and the system is not windows, use the SHELL environment variable
+                this.shell = Environment.get_variable("SHELL");
+                // if the SHELL environment variable is not set, use /bin/sh
+                if (this.shell == null) {
+                    this.shell = Environment.find_program_in_path ("sh");
                 }
                 // if the system is windows, directly spawn the command
+#endif
             }
         }
     }
