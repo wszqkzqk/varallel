@@ -80,11 +80,11 @@ namespace Varallel {
                 return true;
             }
 
-            for (var i = 2; i < args.length; i += 1) {
+            for (var i = 2; args[i] != null; i += 1) {
                 unowned var arg = args[i];
                 if (arg == ":::") {
                     var arg_array = new GenericArray<string> ();
-                    while (i < args.length - 1) {
+                    while (args[i + 1] != null) {
                         if (args[i + 1] == ":::" || args[i + 1] == "::::") {
                             // End of :::
                             break;
@@ -96,7 +96,7 @@ namespace Varallel {
                     add_args (arg_array, args_matrix);
                 } else if (arg == "::::") {
                     // Read from files specified in the following arguments
-                    while (i < args.length - 1) {
+                    while (args[i + 1] != null) {
                         if (args[i + 1] == ":::" || args[i + 1] == "::::") {
                             // End of :::
                             break;
