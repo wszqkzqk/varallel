@@ -1,5 +1,5 @@
 project('varallel', ['c', 'vala'],
-          version: run_command('git', 'describe', '--tags').stdout().strip(),
+          version: run_command('git', 'describe', '--tags', check: true).stdout().strip(),
     meson_version: '>= 0.59.0',
   default_options: [ 'warning_level=2', 'werror=false', 'b_lto=true'],
 )
