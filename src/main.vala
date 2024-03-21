@@ -42,7 +42,7 @@ namespace Varallel {
             { null }
         };
 
-        public static bool parse_nonoption_args (ref unowned string[] args,
+        public static bool parse_nonoption_args (ref string[] args,
                                                  out string? command,
                                                  out GenericArray<GenericArray<string>> args_matrix) {
             command = null;
@@ -80,11 +80,11 @@ namespace Varallel {
                 return true;
             }
 
-            for (var i = 2; i < args.length; i += 1) {
+            for (var i = 2; args[i] != null; i += 1) {
                 unowned var arg = args[i];
                 if (arg == ":::") {
                     var arg_array = new GenericArray<string> ();
-                    while (i < args.length - 1) {
+                    while (args[i + 1] != null) {
                         if (args[i + 1] == ":::" || args[i + 1] == "::::") {
                             // End of :::
                             break;
@@ -96,7 +96,7 @@ namespace Varallel {
                     add_args (arg_array, args_matrix);
                 } else if (arg == "::::") {
                     // Read from files specified in the following arguments
-                    while (i < args.length - 1) {
+                    while (args[i + 1] != null) {
                         if (args[i + 1] == ":::" || args[i + 1] == "::::") {
                             // End of :::
                             break;
@@ -186,9 +186,14 @@ namespace Varallel {
             }
         }
 
-        static int main (string[] args) {
+        static int main (string[] original_args) {
             Intl.setlocale ();
 
+#if WINDOWS
+            var args = Win32.get_command_line ();
+#else
+            var args = strdupv (original_args);
+#endif
             var opt_context = new OptionContext ("command [:::|::::] [arguments]");
             opt_context.set_help_enabled (true);
             opt_context.set_description ("Replacements in cammand:
@@ -204,7 +209,7 @@ For more information, or to report bugs, please visit:
     <https://github.com/wszqkzqk/varallel>");
             opt_context.add_main_entries (options, null);
             try {
-                opt_context.parse (ref args);
+                opt_context.parse_strv (ref args);
             } catch (OptionError e) {
                 printerr ("OptionError: %s\n\n", e.message);
                 printerr (opt_context.get_help (true, null));

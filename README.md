@@ -86,6 +86,8 @@ For more information, or to report bugs, please visit:
   * Hide subcommands output.
 * `-s=SHELL` `--shell=SHELL`
   * Manually set SHELL to run the command, set it to `n` to disable to use any shell, and the subcommands will be spawned directly.
+  * If the `--shell` option is not provided, the program will use the shell specified in the **`SHELL` environment variable** in **Unix-like systems**, and **directly spawn the subcommands** in **Windows**.
+  * Note: If you use `cmd.exe`, `powershell.exe` and `pwsh.exe` in Windows, arguments contains unicode characters will not be handled correctly.`
 * `--hide-bar`
   * Hide progress bar.
   * If both `--hide-bar` and `--bar` are provided, the program will take the last option.
