@@ -312,11 +312,11 @@ namespace Varallel {
                             break;
                         }
                         printerr ("Unknown slot: {%s}\n", indicator);
-                                if (position == 0) {
-                                    builder.append (string.joinv (" ", single_arg_list.data));
-                                } else {
-                                    builder.append (single_arg);
-                                }
+                        if (position == 0) {
+                            builder.append (string.joinv (" ", single_arg_list.data));
+                        } else {
+                            builder.append (single_arg);
+                        }
                         return false;
                     }
                 );
