@@ -128,11 +128,11 @@ namespace Varallel {
             if (in_tty) {
                 printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_RED,
                                     errorname,
-                                    Reporter.EscapeCode.ANSI_RESET,
-                                    ": ",
+                                    Reporter.EscapeCode.ANSI_RESET +
+                                    ": " +
                                     Reporter.EscapeCode.ANSI_BOLD,
                                     message.vprintf (va_list ()),
-                                    Reporter.EscapeCode.ANSI_RESET,
+                                    Reporter.EscapeCode.ANSI_RESET +
                                     "\n"));
                 return;
             }
@@ -147,11 +147,11 @@ namespace Varallel {
             if (in_tty) {
                 printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_MAGENTA,
                                     warningname,
-                                    Reporter.EscapeCode.ANSI_RESET,
-                                    ": ",
+                                    Reporter.EscapeCode.ANSI_RESET +
+                                    ": " +
                                     Reporter.EscapeCode.ANSI_BOLD,
                                     message.vprintf (va_list ()),
-                                    Reporter.EscapeCode.ANSI_RESET,
+                                    Reporter.EscapeCode.ANSI_RESET +
                                     "\n"));
                 return;
             }
