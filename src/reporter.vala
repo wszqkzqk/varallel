@@ -27,10 +27,16 @@ namespace Varallel {
     public class Reporter {
         [CCode (has_target = false)]
         delegate int AttyFunc (int fd);
-        static bool? in_tty = null;
+        static InTTYStats in_tty = InTTYStats.UNKNOWN;
 
         [CCode (cheader_filename = "bindings.h", cname = "is_a_tty")]
         public extern static bool isatty (int fd);
+
+        enum InTTYStats {
+            NO,
+            YES,
+            UNKNOWN
+        }
 
         public enum EscapeCode {
             RESET,
@@ -102,10 +108,10 @@ namespace Varallel {
         }
 
         public static inline void report_failed_command (string command, int status) {
-            if (in_tty == null) {
-                in_tty = isatty (stderr.fileno ());
+            if (in_tty == InTTYStats.UNKNOWN) {
+                in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
-            if (in_tty) {
+            if (in_tty == InTTYStats.YES) {
                 printerr ("Command `%s%s%s' failed with status: %s%d%s\n",
                             Reporter.EscapeCode.ANSI_BOLD + EscapeCode.ANSI_BOLD,
                             command,
@@ -122,10 +128,10 @@ namespace Varallel {
 
         [PrintfFormat]
         public static void error (string errorname, string message, ...) {
-            if (in_tty == null) {
-                in_tty = isatty (stderr.fileno ());
+            if (in_tty == InTTYStats.UNKNOWN) {
+                in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
-            if (in_tty) {
+            if (in_tty == InTTYStats.YES) {
                 printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_RED,
                                     errorname,
                                     Reporter.EscapeCode.ANSI_RESET +
@@ -141,10 +147,10 @@ namespace Varallel {
 
         [PrintfFormat]
         public static void warning (string warningname, string message, ...) {
-            if (in_tty == null) {
-                in_tty = isatty (stderr.fileno ());
+            if (in_tty == InTTYStats.UNKNOWN) {
+                in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
-            if (in_tty) {
+            if (in_tty == InTTYStats.YES) {
                 printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_MAGENTA,
                                     warningname,
                                     Reporter.EscapeCode.ANSI_RESET +
@@ -212,20 +218,20 @@ namespace Varallel {
                     Reporter.EscapeCode.ANSI_RESET +
                     " ");
             }
-            // Only the the effictive length of progressbar is no less than 5, the progressbar will be shown
             var builder = new StringBuilder (prefix);
             builder.append (title);
             // 12 is the length of ": [] 100.00%"
             int bar_length = get_console_width () - prelength - title.length - 12;
+            // Only the the effictive length of progressbar is no less than 5, the progressbar will be shown
             if (in_tty && bar_length >= 5) {
                 builder.append (": [");
                 var fill_length = (int) (percentage / 100.0 * bar_length);
                 builder.append (Reporter.EscapeCode.ANSI_INVERT);
-                for (int i = 0; i < fill_length; i++) {
+                for (int i = 0; i < fill_length; i += 1) {
                     builder.append_c (fill_char);
                 }
                 builder.append (Reporter.EscapeCode.ANSI_RESET);
-                for (int i = 0; i < bar_length - fill_length; i++) {
+                for (int i = 0; i < bar_length - fill_length; i += 1) {
                     builder.append_c (empty_char);
                 }
                 builder.append_printf ("] %6.2f%%", percentage);
