@@ -113,7 +113,7 @@ namespace Varallel {
                         mutex.unlock ();
                     } catch (SpawnError e) {
                         mutex.lock ();
-                        printerr ("SpawnError: %s\n", e.message);
+                        Reporter.error ("SpawnError", e.message);
                         failure_count += 1;
                         if (progress_bar != null) {
                             progress_bar.update (success_count, failure_count);
@@ -132,7 +132,7 @@ namespace Varallel {
                 var command = parse_single_command (original_command, original_args[i], i);
                 if (command == null) {
                     mutex.lock ();
-                    printerr ("Failed to process command: %s\n", original_command);
+                    Reporter.error ("ParseError", "Failed to process command `%s'", original_command);
                     failure_count += 1;
                     if (progress_bar != null) {
                         progress_bar.update (success_count, failure_count);
@@ -144,7 +144,7 @@ namespace Varallel {
                     pool.add (new Unit (command, shell, shell_args));
                 } catch (ThreadError e) {
                     mutex.lock ();
-                    printerr ("ThreadError: %s\n", e.message);
+                    Reporter.error ("ThreadError", e.message);
                     failure_count += 1;
                     if (progress_bar != null) {
                         progress_bar.update (success_count, failure_count);
@@ -152,7 +152,7 @@ namespace Varallel {
                     mutex.unlock ();
                 } catch (ShellError e) {
                     mutex.lock ();
-                    printerr ("ShellError: %s\n", e.message);
+                    Reporter.error ("ShellError", e.message);
                     failure_count += 1;
                     if (progress_bar != null) {
                         progress_bar.update (success_count, failure_count);
@@ -172,7 +172,7 @@ namespace Varallel {
             for (uint i = 0; i < original_args.length; i += 1) {
                 var command = parse_single_command (original_command, original_args[i], i);
                 if (command == null) {
-                    printerr ("Failed to process command: %s\n", original_command);
+                    Reporter.error ("ParseError", "Failed to process command `%s'", original_command);
                     continue;
                 }
                 print ("%s\n", command);
@@ -311,7 +311,7 @@ namespace Varallel {
                         default:
                             break;
                         }
-                        printerr ("Unknown slot: {%s}\n", indicator);
+                        Reporter.warning ("Warning", "Unknown slot: {%s}", indicator);
                         if (position == 0) {
                             builder.append (string.joinv (" ", single_arg_list.data));
                         } else {
@@ -329,7 +329,7 @@ namespace Varallel {
                 }
                 return ret;
             } catch (RegexError e) {
-                printerr ("RegexError: %s\n", e.message);
+                Reporter.error ("RegexError", e.message);
                 return null;
             }
         }

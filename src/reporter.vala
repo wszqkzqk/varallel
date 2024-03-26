@@ -119,6 +119,44 @@ namespace Varallel {
                         command,
                         status);
         }
+
+        [PrintfFormat]
+        public static void error (string errorname, string message, ...) {
+            if (in_tty == null) {
+                in_tty = isatty (stderr.fileno ());
+            }
+            if (in_tty) {
+                printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_RED,
+                                    errorname,
+                                    Reporter.EscapeCode.ANSI_RESET,
+                                    ": ",
+                                    Reporter.EscapeCode.ANSI_BOLD,
+                                    message.vprintf (va_list ()),
+                                    Reporter.EscapeCode.ANSI_RESET,
+                                    "\n"));
+                return;
+            }
+            printerr (errorname.concat (": ", message.vprintf (va_list ()), "\n"));
+        }
+
+        [PrintfFormat]
+        public static void warning (string warningname, string message, ...) {
+            if (in_tty == null) {
+                in_tty = isatty (stderr.fileno ());
+            }
+            if (in_tty) {
+                printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_MAGENTA,
+                                    warningname,
+                                    Reporter.EscapeCode.ANSI_RESET,
+                                    ": ",
+                                    Reporter.EscapeCode.ANSI_BOLD,
+                                    message.vprintf (va_list ()),
+                                    Reporter.EscapeCode.ANSI_RESET,
+                                    "\n"));
+                return;
+            }
+            printerr (warningname.concat (": ", message.vprintf (va_list ()), "\n"));
+        }
     }
 
     [Compact (opaque = true)]

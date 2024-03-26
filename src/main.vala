@@ -56,7 +56,7 @@ namespace Varallel {
                 try {
                     colsep_regex = new Regex (colsep_regex_str, RegexCompileFlags.OPTIMIZE);
                 } catch (RegexError e) {
-                    printerr ("RegexError: %s\n", e.message);
+                    Reporter.error ("RegexError", e.message);
                     return false;
                 }
             }
@@ -107,7 +107,7 @@ namespace Varallel {
                             // Use stdin as input
                             if (Reporter.isatty (stdin.fileno ())) {
                                 // stdin is a tty, WARNING and ignore
-                                printerr ("Warning: stdin is a tty, ignoring\n");
+                                Reporter.warning ("Warning", "stdin is a tty, ignoring");
                                 continue;
                             }
                             // stdin is a pipe
@@ -120,7 +120,7 @@ namespace Varallel {
                         } else {
                             var stream = FileStream.open (filename, "r");
                             if (stream == null) {
-                                printerr ("Warning: error opening file `%s'\n", filename);
+                                Reporter.warning ("Warning", "error opening file `%s'", filename);
                                 continue;
                             }
                             string line;
@@ -132,7 +132,7 @@ namespace Varallel {
                         }
                     }
                 } else {
-                    printerr ("OptionError: invalid separator, the command must be in one\n");
+                    Reporter.error ("OptionError", "invalid separator, the command must be in one");
                     return false;
                 }
             }
@@ -211,7 +211,7 @@ For more information, or to report bugs, please visit:
             try {
                 opt_context.parse_strv (ref args);
             } catch (OptionError e) {
-                printerr ("OptionError: %s\n\n", e.message);
+                Reporter.error ("OptionError", e.message);
                 printerr (opt_context.get_help (true, null));
                 return 1;
             }
@@ -224,11 +224,11 @@ For more information, or to report bugs, please visit:
             string? command;
             GenericArray<GenericArray<string>> args_matrix;
             if ((!parse_nonoption_args (ref args, out command, out args_matrix))) {
-                printerr ("OptionError: invalid command or args\n\n");
+                Reporter.error ("OptionError", "invalid command or args");
                 printerr (opt_context.get_help (true, null));
                 return 1;
             } else if (args_matrix == null || args_matrix.length == 0) {
-                printerr ("OptionError: no input specified\n\n");
+                Reporter.error ("OptionError", "no input specified");
                 printerr (opt_context.get_help (true, null));
                 return 1;
             }
@@ -248,7 +248,7 @@ For more information, or to report bugs, please visit:
                     manager.run ();
                 }
             } catch (ThreadError e) {
-                printerr ("ThreadError: %s\n", e.message);
+                Reporter.error ("ThreadError", e.message);
                 return 1;
             }
 
