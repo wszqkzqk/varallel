@@ -27,10 +27,16 @@ namespace Varallel {
     public class Reporter {
         [CCode (has_target = false)]
         delegate int AttyFunc (int fd);
-        static bool? in_tty = null;
+        static InTTYStats in_tty = InTTYStats.UNKNOWN;
 
         [CCode (cheader_filename = "bindings.h", cname = "is_a_tty")]
         public extern static bool isatty (int fd);
+
+        enum InTTYStats {
+            NO,
+            YES,
+            UNKNOWN
+        }
 
         public enum EscapeCode {
             RESET,
@@ -102,10 +108,10 @@ namespace Varallel {
         }
 
         public static inline void report_failed_command (string command, int status) {
-            if (in_tty == null) {
-                in_tty = isatty (stderr.fileno ());
+            if (in_tty == InTTYStats.UNKNOWN) {
+                in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
-            if (in_tty) {
+            if (in_tty == InTTYStats.YES) {
                 printerr ("Command `%s%s%s' failed with status: %s%d%s\n",
                             Reporter.EscapeCode.ANSI_BOLD + EscapeCode.ANSI_BOLD,
                             command,
@@ -122,10 +128,10 @@ namespace Varallel {
 
         [PrintfFormat]
         public static void error (string errorname, string message, ...) {
-            if (in_tty == null) {
-                in_tty = isatty (stderr.fileno ());
+            if (in_tty == InTTYStats.UNKNOWN) {
+                in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
-            if (in_tty) {
+            if (in_tty == InTTYStats.YES) {
                 printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_RED,
                                     errorname,
                                     Reporter.EscapeCode.ANSI_RESET +
@@ -141,10 +147,10 @@ namespace Varallel {
 
         [PrintfFormat]
         public static void warning (string warningname, string message, ...) {
-            if (in_tty == null) {
-                in_tty = isatty (stderr.fileno ());
+            if (in_tty == InTTYStats.UNKNOWN) {
+                in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
-            if (in_tty) {
+            if (in_tty == InTTYStats.YES) {
                 printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_MAGENTA,
                                     warningname,
                                     Reporter.EscapeCode.ANSI_RESET +
