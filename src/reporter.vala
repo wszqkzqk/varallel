@@ -25,8 +25,6 @@ namespace Varallel {
 
     [Compact (opaque = true)]
     public class Reporter {
-        [CCode (has_target = false)]
-        delegate int AttyFunc (int fd);
         static InTTYStats in_tty = InTTYStats.UNKNOWN;
 
         [CCode (cheader_filename = "bindings.h", cname = "is_a_tty")]
