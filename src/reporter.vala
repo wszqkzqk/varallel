@@ -30,12 +30,14 @@ namespace Varallel {
         [CCode (cheader_filename = "bindings.h", cname = "is_a_tty")]
         public extern static bool isatty (int fd);
 
+        [CCode (has_type_id = false)]
         enum InTTYStats {
             NO,
             YES,
             UNKNOWN
         }
 
+        [CCode (has_type_id = false)]
         public enum EscapeCode {
             RESET,
             RED,
