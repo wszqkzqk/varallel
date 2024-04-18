@@ -108,7 +108,7 @@ namespace Varallel {
         }
 
         public static inline void report_failed_command (string command, int status) {
-            if (in_tty == InTTYStats.UNKNOWN) {
+            if (unlikely (in_tty == InTTYStats.UNKNOWN)) {
                 in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
             if (in_tty == InTTYStats.YES) {
@@ -127,41 +127,54 @@ namespace Varallel {
         }
 
         [PrintfFormat]
-        public static void error (string errorname, string message, ...) {
-            if (in_tty == InTTYStats.UNKNOWN) {
+        public static void error (string error_name, string msg, ...) {
+            if (unlikely (in_tty == InTTYStats.UNKNOWN)) {
                 in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
             if (in_tty == InTTYStats.YES) {
                 printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_RED,
-                                    errorname,
+                                    error_name,
                                     Reporter.EscapeCode.ANSI_RESET +
                                     ": " +
                                     Reporter.EscapeCode.ANSI_BOLD,
-                                    message.vprintf (va_list ()),
+                                    msg.vprintf (va_list ()),
                                     Reporter.EscapeCode.ANSI_RESET +
                                     "\n"));
                 return;
             }
-            printerr (errorname.concat (": ", message.vprintf (va_list ()), "\n"));
+            printerr (error_name.concat (": ", msg.vprintf (va_list ()), "\n"));
         }
 
         [PrintfFormat]
-        public static void warning (string warningname, string message, ...) {
-            if (in_tty == InTTYStats.UNKNOWN) {
+        public static void warning (string warning_name, string msg, ...) {
+            if (unlikely (in_tty == InTTYStats.UNKNOWN)) {
                 in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
             if (in_tty == InTTYStats.YES) {
                 printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_MAGENTA,
-                                    warningname,
+                                    warning_name,
                                     Reporter.EscapeCode.ANSI_RESET +
                                     ": " +
                                     Reporter.EscapeCode.ANSI_BOLD,
-                                    message.vprintf (va_list ()),
+                                    msg.vprintf (va_list ()),
                                     Reporter.EscapeCode.ANSI_RESET +
                                     "\n"));
                 return;
             }
-            printerr (warningname.concat (": ", message.vprintf (va_list ()), "\n"));
+            printerr (warning_name.concat (": ", msg.vprintf (va_list ()), "\n"));
+        }
+
+        public static void clear_putserr (string msg, bool show_progress_bar = true) {
+            if (unlikely (in_tty == InTTYStats.UNKNOWN)) {
+                in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
+            }
+            if (show_progress_bar) {
+                printerr ("\r%s\r%s",
+                    string.nfill ((in_tty == InTTYStats.YES) ? get_console_width () : 0, ' '),
+                    msg);
+            } else {
+                printerr ("%s", msg);
+            }
         }
     }
 
