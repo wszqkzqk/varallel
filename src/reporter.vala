@@ -25,7 +25,7 @@ namespace Varallel {
 
     [Compact (opaque = true)]
     public class Reporter {
-        static InTTYStats in_tty = InTTYStats.UNKNOWN;
+        static InTTYStats in_tty_stats = InTTYStats.UNKNOWN;
 
         [CCode (cheader_filename = "bindings.h", cname = "is_a_tty")]
         public extern static bool isatty (int fd);
@@ -108,10 +108,10 @@ namespace Varallel {
         }
 
         public static inline void report_failed_command (string command, int status) {
-            if (unlikely (in_tty == InTTYStats.UNKNOWN)) {
-                in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
+            if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
+                in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
-            if (in_tty == InTTYStats.YES) {
+            if (in_tty_stats == InTTYStats.YES) {
                 printerr ("Command `%s%s%s' failed with status: %s%d%s\n",
                             Reporter.EscapeCode.ANSI_BOLD + EscapeCode.ANSI_BOLD,
                             command,
@@ -128,10 +128,10 @@ namespace Varallel {
 
         [PrintfFormat]
         public static void error (string error_name, string msg, ...) {
-            if (unlikely (in_tty == InTTYStats.UNKNOWN)) {
-                in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
+            if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
+                in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
-            if (in_tty == InTTYStats.YES) {
+            if (in_tty_stats == InTTYStats.YES) {
                 printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_RED,
                                     error_name,
                                     Reporter.EscapeCode.ANSI_RESET +
@@ -147,10 +147,10 @@ namespace Varallel {
 
         [PrintfFormat]
         public static void warning (string warning_name, string msg, ...) {
-            if (unlikely (in_tty == InTTYStats.UNKNOWN)) {
-                in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
+            if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
+                in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
-            if (in_tty == InTTYStats.YES) {
+            if (in_tty_stats == InTTYStats.YES) {
                 printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_MAGENTA,
                                     warning_name,
                                     Reporter.EscapeCode.ANSI_RESET +
@@ -165,12 +165,12 @@ namespace Varallel {
         }
 
         public static void clear_putserr (string msg, bool show_progress_bar = true) {
-            if (unlikely (in_tty == InTTYStats.UNKNOWN)) {
-                in_tty = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
+            if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
+                in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
             if (show_progress_bar) {
                 printerr ("\r%s\r%s",
-                    string.nfill ((in_tty == InTTYStats.YES) ? get_console_width () : 0, ' '),
+                    string.nfill ((in_tty_stats == InTTYStats.YES) ? get_console_width () : 0, ' '),
                     msg);
             } else {
                 printerr ("%s", msg);
@@ -240,13 +240,9 @@ namespace Varallel {
                 builder.append (": [");
                 var fill_length = (int) (percentage / 100.0 * bar_length);
                 builder.append (Reporter.EscapeCode.ANSI_INVERT);
-                for (int i = 0; i < fill_length; i += 1) {
-                    builder.append_c (fill_char);
-                }
+                builder.append (string.nfill (fill_length, fill_char));
                 builder.append (Reporter.EscapeCode.ANSI_RESET);
-                for (int i = 0; i < bar_length - fill_length; i += 1) {
-                    builder.append_c (empty_char);
-                }
+                builder.append (string.nfill (bar_length - fill_length, empty_char));
                 builder.append_printf ("] %6.2f%%", percentage);
             } else {
                 builder.append_printf (": %6.2f%%", percentage);
