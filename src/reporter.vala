@@ -240,13 +240,9 @@ namespace Varallel {
                 builder.append (": [");
                 var fill_length = (int) (percentage / 100.0 * bar_length);
                 builder.append (Reporter.EscapeCode.ANSI_INVERT);
-                for (int i = 0; i < fill_length; i += 1) {
-                    builder.append_c (fill_char);
-                }
+                builder.append (string.nfill (fill_length, fill_char));
                 builder.append (Reporter.EscapeCode.ANSI_RESET);
-                for (int i = 0; i < bar_length - fill_length; i += 1) {
-                    builder.append_c (empty_char);
-                }
+                builder.append (string.nfill (bar_length - fill_length, empty_char));
                 builder.append_printf ("] %6.2f%%", percentage);
             } else {
                 builder.append_printf (": %6.2f%%", percentage);
