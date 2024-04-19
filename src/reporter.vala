@@ -122,8 +122,8 @@ namespace Varallel {
                 return;
             }
             printerr ("Command `%s' failed with status: %d\n",
-                        command,
-                        status);
+                command,
+                status);
         }
 
         [PrintfFormat]
@@ -132,17 +132,19 @@ namespace Varallel {
                 in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
             if (in_tty_stats == InTTYStats.YES) {
-                printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_RED,
-                                    error_name,
-                                    Reporter.EscapeCode.ANSI_RESET +
-                                    ": " +
-                                    Reporter.EscapeCode.ANSI_BOLD,
-                                    msg.vprintf (va_list ()),
-                                    Reporter.EscapeCode.ANSI_RESET +
-                                    "\n"));
+                printerr ("%s",
+                    "".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_RED,
+                    error_name,
+                    Reporter.EscapeCode.ANSI_RESET +
+                    ": " +
+                    Reporter.EscapeCode.ANSI_BOLD,
+                    msg.vprintf (va_list ()),
+                    Reporter.EscapeCode.ANSI_RESET +
+                    "\n"));
                 return;
             }
-            printerr (error_name.concat (": ", msg.vprintf (va_list ()), "\n"));
+            printerr ("%s",
+                error_name.concat (": ", msg.vprintf (va_list ()), "\n"));
         }
 
         [PrintfFormat]
@@ -151,17 +153,19 @@ namespace Varallel {
                 in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
             }
             if (in_tty_stats == InTTYStats.YES) {
-                printerr ("".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_MAGENTA,
-                                    warning_name,
-                                    Reporter.EscapeCode.ANSI_RESET +
-                                    ": " +
-                                    Reporter.EscapeCode.ANSI_BOLD,
-                                    msg.vprintf (va_list ()),
-                                    Reporter.EscapeCode.ANSI_RESET +
-                                    "\n"));
+                printerr ("%s",
+                    "".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_MAGENTA,
+                    warning_name,
+                    Reporter.EscapeCode.ANSI_RESET +
+                    ": " +
+                    Reporter.EscapeCode.ANSI_BOLD,
+                    msg.vprintf (va_list ()),
+                    Reporter.EscapeCode.ANSI_RESET +
+                    "\n"));
                 return;
             }
-            printerr (warning_name.concat (": ", msg.vprintf (va_list ()), "\n"));
+            printerr ("%s",
+                warning_name.concat (": ", msg.vprintf (va_list ()), "\n"));
         }
 
         public static void clear_putserr (string msg, bool show_progress_bar = true) {
@@ -247,7 +251,7 @@ namespace Varallel {
             } else {
                 builder.append_printf (": %6.2f%%", percentage);
             }
-            printerr(builder.str);
+            printerr ("%s", builder.str);
         }
     }
 }

@@ -213,7 +213,7 @@ For more information, or to report bugs, please visit:
             } catch (OptionError e) {
                 Reporter.error ("OptionError", e.message);
                 stderr.putc ('\n');
-                printerr (opt_context.get_help (true, null));
+                printerr ("%s", opt_context.get_help (true, null));
                 return 1;
             }
 
@@ -227,12 +227,12 @@ For more information, or to report bugs, please visit:
             if ((!parse_nonoption_args (ref args, out command, out args_matrix))) {
                 Reporter.error ("OptionError", "invalid command or args");
                 stderr.putc ('\n');
-                printerr (opt_context.get_help (true, null));
+                printerr ("%s", opt_context.get_help (true, null));
                 return 1;
             } else if (args_matrix == null || args_matrix.length == 0) {
                 Reporter.error ("OptionError", "no input specified");
                 stderr.putc ('\n');
-                printerr (opt_context.get_help (true, null));
+                printerr ("%s", opt_context.get_help (true, null));
                 return 1;
             }
 
