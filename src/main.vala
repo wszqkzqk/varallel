@@ -42,7 +42,7 @@ namespace Varallel {
             { null }
         };
 
-        public static bool parse_nonoption_args ([CCode (array_length = false, array_null_terminated = true)] ref string[] args,
+        public static bool parse_nonoption_args (ref string[] args,
                                                  out string? command,
                                                  out GenericArray<GenericArray<string>> args_matrix) {
             command = null;
@@ -212,8 +212,7 @@ For more information, or to report bugs, please visit:
                 opt_context.parse_strv (ref args);
             } catch (OptionError e) {
                 Reporter.error ("OptionError", e.message);
-                stderr.putc ('\n');
-                printerr ("%s", opt_context.get_help (true, null));
+                printerr ("\n%s", opt_context.get_help (true, null));
                 return 1;
             }
 
@@ -226,13 +225,11 @@ For more information, or to report bugs, please visit:
             GenericArray<GenericArray<string>> args_matrix;
             if ((!parse_nonoption_args (ref args, out command, out args_matrix))) {
                 Reporter.error ("OptionError", "invalid command or args");
-                stderr.putc ('\n');
-                printerr ("%s", opt_context.get_help (true, null));
+                printerr ("\n%s", opt_context.get_help (true, null));
                 return 1;
             } else if (args_matrix == null || args_matrix.length == 0) {
                 Reporter.error ("OptionError", "no input specified");
-                stderr.putc ('\n');
-                printerr ("%s", opt_context.get_help (true, null));
+                printerr ("\n%s", opt_context.get_help (true, null));
                 return 1;
             }
 
