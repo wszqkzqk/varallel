@@ -19,55 +19,53 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
-namespace Varallel {
-    [Compact (opaque = true)]
-    public class Unit {
-        string[] commands;
-        string subprcs_output;
-        string subprcs_error;
-        int subprcs_status;
+[Compact (opaque = true)]
+public class Varallel.Unit {
+    string[] commands;
+    string subprcs_output;
+    string subprcs_error;
+    int subprcs_status;
 
-        public unowned string command_line {
-            get {
-                return commands[2];
-            }
+    public unowned string command_line {
+        get {
+            return commands[2];
         }
-        public unowned string? output {
-            get {
-                return subprcs_output;
-            }
+    }
+    public unowned string? output {
+        get {
+            return subprcs_output;
         }
-        public unowned string? error {
-            get {
-                return subprcs_error;
-            }
+    }
+    public unowned string? error {
+        get {
+            return subprcs_error;
         }
-        public int status {
-            get {
-                return subprcs_status;
-            }
-        }
-
-        public Unit (string command_line, string? shell, string? exec_arg) throws ShellError {
-            if (shell == null) {
-                // If shell is not specified, do not use shell and just execute the command directly
-                Shell.parse_argv (command_line, out commands);
-            } else {
-                commands = {shell, exec_arg, command_line};
-            }
-        }
-
-        public int run () throws SpawnError {
-            Process.spawn_sync (
-                null,
-                commands,
-                null,
-                SpawnFlags.SEARCH_PATH,
-                null,
-                out subprcs_output,
-                out subprcs_error,
-                out subprcs_status);
+    }
+    public int status {
+        get {
             return subprcs_status;
         }
+    }
+
+    public Unit (string command_line, string? shell, string? exec_arg) throws ShellError {
+        if (shell == null) {
+            // If shell is not specified, do not use shell and just execute the command directly
+            Shell.parse_argv (command_line, out commands);
+        } else {
+            commands = {shell, exec_arg, command_line};
+        }
+    }
+
+    public int run () throws SpawnError {
+        Process.spawn_sync (
+            null,
+            commands,
+            null,
+            SpawnFlags.SEARCH_PATH,
+            null,
+            out subprcs_output,
+            out subprcs_error,
+            out subprcs_status);
+        return subprcs_status;
     }
 }
