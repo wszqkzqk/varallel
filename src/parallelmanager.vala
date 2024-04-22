@@ -20,9 +20,8 @@
  */
 
 public class Varallel.ParallelManager {
-    /**
-    * ParallelManager is a class to manage parallel execution of commands.
-    */
+    /* ParallelManager is a class to manage parallel execution of commands. */
+
     ThreadPool<Unit> pool;
     string original_command;
     GenericArray<GenericArray<string>> original_args;

@@ -21,6 +21,8 @@
 
 [Compact (opaque = true)]
 public class Varallel.CLI {
+    /* CLI is a class to handle command line arguments and options */
+
     static bool show_version = false;
     static int jobs = 0;
     static string? colsep_regex_str = null;

@@ -21,6 +21,8 @@
 
 [Compact (opaque = true)]
 public class Varallel.Unit {
+    /* Unit is a class that represents a subprocess to be executed. */
+
     string[] commands;
     string subprcs_output;
     string subprcs_error;

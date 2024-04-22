@@ -21,6 +21,8 @@
 
 [Compact (opaque = true)]
 public class Varallel.Reporter {
+    /* Reporter is a class that provides a set of functions to report errors, warnings, and progress. */
+
     static InTTYStats in_tty_stats = InTTYStats.UNKNOWN;
 
     [CCode (cheader_filename = "bindings.h", cname = "is_a_tty")]
@@ -182,6 +184,8 @@ public class Varallel.Reporter {
 
 [Compact (opaque = true)]
 public class Varallel.ProgressBar {
+    /* ProgressBar is a class that provides a set of functions to show progress bar. */
+
     string title;
     double percentage = 0.0;
     int total_steps;
