@@ -218,7 +218,7 @@ For more information, or to report bugs, please visit:
         }
 
         if (show_version) {
-            printerr ("Varallel v%s\n", VERSION);
+            Reporter.info ("Varallel", VERSION);
             return 0;
         }
 
