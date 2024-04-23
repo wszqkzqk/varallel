@@ -113,12 +113,12 @@ public class Varallel.Reporter {
         }
         if (in_tty_stats == InTTYStats.YES) {
             printerr ("Command `%s%s%s' failed with status: %s%d%s\n",
-                        Reporter.EscapeCode.ANSI_BOLD + EscapeCode.ANSI_BOLD,
-                        command,
-                        Reporter.EscapeCode.ANSI_RESET,
-                        Reporter.EscapeCode.ANSI_RED + EscapeCode.ANSI_BOLD,
-                        status,
-                        Reporter.EscapeCode.ANSI_RESET);
+                Reporter.EscapeCode.ANSI_BOLD + EscapeCode.ANSI_YELLOW,
+                command,
+                Reporter.EscapeCode.ANSI_RESET,
+                Reporter.EscapeCode.ANSI_RED + EscapeCode.ANSI_BOLD,
+                status,
+                Reporter.EscapeCode.ANSI_RESET);
             return;
         }
         printerr ("Command `%s' failed with status: %d\n",
@@ -126,46 +126,40 @@ public class Varallel.Reporter {
             status);
     }
 
-    [PrintfFormat]
-    public static void error (string error_name, string msg, ...) {
+    public static inline void report (string color_code, string domain_name, string msg, va_list args) {
         if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
             in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
         }
         if (in_tty_stats == InTTYStats.YES) {
             printerr ("%s",
-                "".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_RED,
-                error_name,
-                Reporter.EscapeCode.ANSI_RESET +
-                ": " +
-                Reporter.EscapeCode.ANSI_BOLD,
-                msg.vprintf (va_list ()),
-                Reporter.EscapeCode.ANSI_RESET +
-                "\n"));
+                Reporter.EscapeCode.ANSI_BOLD.concat (
+                    color_code,
+                    domain_name,
+                    Reporter.EscapeCode.ANSI_RESET +
+                    ": " +
+                    Reporter.EscapeCode.ANSI_BOLD,
+                    msg.vprintf (args),
+                    Reporter.EscapeCode.ANSI_RESET +
+                    "\n"));
             return;
         }
         printerr ("%s",
-            error_name.concat (": ", msg.vprintf (va_list ()), "\n"));
+            domain_name.concat (": ", msg.vprintf (args), "\n"));
+    }
+
+    [PrintfFormat]
+    public static void error (string error_name, string msg, ...) {
+        report (Reporter.EscapeCode.ANSI_RED, error_name, msg, va_list ());
     }
 
     [PrintfFormat]
     public static void warning (string warning_name, string msg, ...) {
-        if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
-            in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
-        }
-        if (in_tty_stats == InTTYStats.YES) {
-            printerr ("%s",
-                "".concat (Reporter.EscapeCode.ANSI_BOLD + Reporter.EscapeCode.ANSI_MAGENTA,
-                warning_name,
-                Reporter.EscapeCode.ANSI_RESET +
-                ": " +
-                Reporter.EscapeCode.ANSI_BOLD,
-                msg.vprintf (va_list ()),
-                Reporter.EscapeCode.ANSI_RESET +
-                "\n"));
-            return;
-        }
-        printerr ("%s",
-            warning_name.concat (": ", msg.vprintf (va_list ()), "\n"));
+        report (Reporter.EscapeCode.ANSI_MAGENTA, warning_name, msg, va_list ());
+    }
+
+    [PrintfFormat]
+    public static void info (string info_name, string msg, ...) {
+        report (Reporter.EscapeCode.ANSI_CYAN, info_name, msg, va_list ());
     }
 
     public static void clear_putserr (string msg, bool show_progress_bar = true) {
