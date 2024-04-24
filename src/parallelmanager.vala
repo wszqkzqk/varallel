@@ -93,7 +93,7 @@ public class Varallel.ParallelManager {
                         if ((subprsc.error != null && subprsc.error != "")
                         || (subprsc.output != null && subprsc.output != "")) {
                             Reporter.clear_putserr (subprsc.error, show_progress_bar);
-                            print ("%s", subprsc.output);
+                            stdout.puts (subprsc.output);
                         }
                     }
                     if (status == 0) {
@@ -170,7 +170,7 @@ public class Varallel.ParallelManager {
                 Reporter.error ("ParseError", "Failed to process command `%s'", original_command);
                 continue;
             }
-            print ("%s\n", command);
+            stdout.printf ("%s\n", command);
         }
     }
 
