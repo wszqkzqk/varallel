@@ -112,7 +112,7 @@ public class Varallel.Reporter {
             in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
         }
         if (in_tty_stats == InTTYStats.YES) {
-            printerr ("Command `%s%s%s' failed with status: %s%d%s\n",
+            stderr.printf ("Command `%s%s%s' failed with status: %s%d%s\n",
                 Reporter.EscapeCode.ANSI_BOLD + EscapeCode.ANSI_YELLOW,
                 command,
                 Reporter.EscapeCode.ANSI_RESET,
@@ -121,7 +121,7 @@ public class Varallel.Reporter {
                 Reporter.EscapeCode.ANSI_RESET);
             return;
         }
-        printerr ("Command `%s' failed with status: %d\n",
+        stderr.printf ("Command `%s' failed with status: %d\n",
             command,
             status);
     }
@@ -131,8 +131,7 @@ public class Varallel.Reporter {
             in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
         }
         if (in_tty_stats == InTTYStats.YES) {
-            printerr ("%s",
-                Reporter.EscapeCode.ANSI_BOLD.concat (
+            stderr.puts (Reporter.EscapeCode.ANSI_BOLD.concat (
                     color_code,
                     domain_name,
                     Reporter.EscapeCode.ANSI_RESET +
@@ -143,8 +142,7 @@ public class Varallel.Reporter {
                     "\n"));
             return;
         }
-        printerr ("%s",
-            domain_name.concat (": ", msg.vprintf (args), "\n"));
+        stderr.puts (domain_name.concat (": ", msg.vprintf (args), "\n"));
     }
 
     [PrintfFormat]
@@ -167,11 +165,11 @@ public class Varallel.Reporter {
             in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
         }
         if (show_progress_bar) {
-            printerr ("\r%s\r%s",
+            stderr.printf ("\r%s\r%s",
                 string.nfill ((in_tty_stats == InTTYStats.YES) ? get_console_width () : 0, ' '),
                 msg);
         } else {
-            printerr ("%s", msg);
+            stderr.puts (msg);
         }
     }
 }
@@ -247,6 +245,6 @@ public class Varallel.ProgressBar {
         } else {
             builder.append_printf (": %6.2f%%", percentage);
         }
-        printerr ("%s", builder.str);
+        stderr.puts (builder.str);
     }
 }

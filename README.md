@@ -29,12 +29,10 @@ meson compile -C builddir
 
 ```
 Usage:
-  varallel [OPTION?] command [:::|::::] [arguments]
+  varallel [OPTION…] command [:::|::::] [arguments]
 
-Help Options:
-  -h, --help                  Show help options
-
-Application Options:
+Options:
+  -h, --help                  Show this message
   -v, --version               Display version number
   -j, --jobs=n                Run n jobs in parallel
   -r, --colsep=EXPRESSION     Regex to split the argument
