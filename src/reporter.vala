@@ -25,8 +25,6 @@ public class Varallel.Reporter {
 
     static InTTYStats in_tty_stats = InTTYStats.UNKNOWN;
 
-    [CCode (cheader_filename = "bindings.h", cname = "is_a_tty")]
-    public extern static bool isatty (int fd);
     [CCode (cheader_filename = "bindings.h", cname = "get_console_width")]
     public extern static int get_console_width ();
 
@@ -109,7 +107,7 @@ public class Varallel.Reporter {
 
     public static inline void report_failed_command (string command, int status) {
         if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
-            in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
+            in_tty_stats = (Log.writer_supports_color (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
         }
         if (in_tty_stats == InTTYStats.YES) {
             stderr.printf ("Command `%s%s%s' failed with status: %s%d%s\n",
@@ -128,7 +126,7 @@ public class Varallel.Reporter {
 
     public static inline void report (string color_code, string domain_name, string msg, va_list args) {
         if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
-            in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
+            in_tty_stats = (Log.writer_supports_color (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
         }
         if (in_tty_stats == InTTYStats.YES) {
             stderr.puts (Reporter.EscapeCode.ANSI_BOLD.concat (
@@ -162,7 +160,7 @@ public class Varallel.Reporter {
 
     public static void clear_putserr (string msg, bool show_progress_bar = true) {
         if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
-            in_tty_stats = (isatty (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
+            in_tty_stats = (Log.writer_supports_color (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
         }
         if (show_progress_bar) {
             stderr.printf ("\r%s\r%s",
@@ -194,7 +192,7 @@ public class Varallel.ProgressBar {
         this.total_steps = total_steps;
         this.fill_char = fill_char;
         this.empty_char = empty_char;
-        this.in_tty = Reporter.isatty (stderr.fileno ());
+        this.in_tty = Log.writer_supports_color (stderr.fileno ());
     }
 
     public inline int update (uint success_count, uint failure_count) {

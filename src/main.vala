@@ -68,7 +68,7 @@ public class Varallel.CLI {
         if (args.length <= 2) {
             // No args specified, use stdin (pipe) as input
             // Check if stdin is a pipe
-            if (Reporter.isatty (stdin.fileno ())) {
+            if (Log.writer_supports_color (stdin.fileno ())) {
                 // stdin is a tty
                 // No input and no command specified, ERROR
                 return false;
@@ -108,7 +108,7 @@ public class Varallel.CLI {
                     unowned var filename = args[i];
                     if (filename == "-") {
                         // Use stdin as input
-                        if (Reporter.isatty (stdin.fileno ())) {
+                        if (Log.writer_supports_color (stdin.fileno ())) {
                             // stdin is a tty, WARNING and ignore
                             Reporter.warning ("Warning", "stdin is a tty, ignoring");
                             continue;
