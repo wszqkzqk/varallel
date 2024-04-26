@@ -41,6 +41,7 @@ Options:
   --hide-bar                  Hide progress bar
   --bar                       Show progress bar (Default behavior)
   --print-only                Only print the command but not run
+  --color=WHEN                Enable color output, options are 'always', 'never', or 'auto'
 
 Replacements in cammand:
   {}                          Input argument
