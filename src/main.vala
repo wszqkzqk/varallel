@@ -23,6 +23,7 @@
 public class Varallel.CLI {
     /* CLI is a class to handle command line arguments and options */
 
+    static bool show_help = false;
     static bool show_version = false;
     static int jobs = 0;
     static string? colsep_regex_str = null;
@@ -30,7 +31,7 @@ public class Varallel.CLI {
     static string? shell = null;
     static bool bar = true;
     static bool print_only = false;
-    static bool show_help = false;
+    static string? color_setting_str = null;
     static Regex colsep_regex = null;
     const OptionEntry[] options = {
         { "help", 'h', OptionFlags.NONE, OptionArg.NONE, ref show_help, "Show help message", null },
@@ -42,6 +43,7 @@ public class Varallel.CLI {
         { "hide-bar", '\0', OptionFlags.REVERSE, OptionArg.NONE, ref bar, "Hide progress bar", null},
         { "bar", '\0', OptionFlags.NONE, OptionArg.NONE, ref bar, "Show progress bar (Default behavior)", null},
         { "print-only", '\0', OptionFlags.NONE, OptionArg.NONE, ref print_only, "Only print the command but not run", null},
+        { "color", '\0', OptionFlags.NONE, OptionArg.STRING, ref color_setting_str, "Enable color output, options are 'always', 'never', or 'auto'", "WHEN" },
         { null }
     };
 
@@ -223,6 +225,25 @@ For more information, or to report bugs, please visit:
             Reporter.error ("OptionError", e.message);
             stderr.printf ("\n%s", opt_context.get_help (true, null));
             return 1;
+        }
+
+        if (color_setting_str != null) {
+            color_setting_str = color_setting_str.ascii_down ();
+            switch (color_setting_str) {
+            case "always":
+                Reporter.color_setting = Reporter.ColorSettings.ALWAYS;
+                break;
+            case "never":
+                Reporter.color_setting = Reporter.ColorSettings.NEVER;
+                break;
+            case "auto":
+                Reporter.color_setting = Reporter.ColorSettings.AUTO;
+                break;
+            default:
+                Reporter.error ("OptionError", "invalid color setting");
+                stderr.printf ("\n%s", opt_context.get_help (true, null));
+                return 1;
+            }
         }
 
         if (show_help) {
