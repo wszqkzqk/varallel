@@ -23,16 +23,40 @@
 public class Varallel.Reporter {
     /* Reporter is a class that provides a set of functions to report errors, warnings, and progress. */
 
-    static InTTYStats in_tty_stats = InTTYStats.UNKNOWN;
+    internal static ColorStats color_stats = ColorStats.UNKNOWN;
+    public static ColorSettings color_setting = ColorSettings.AUTO;
 
     [CCode (cheader_filename = "bindings.h", cname = "get_console_width")]
     public extern static int get_console_width ();
 
     [CCode (has_type_id = false)]
-    enum InTTYStats {
+    internal enum ColorStats {
         NO,
         YES,
-        UNKNOWN
+        UNKNOWN;
+
+        internal inline bool to_bool () {
+            switch (this) {
+            case YES: return true;
+            case NO: return false;
+            default: return Log.writer_supports_color (stderr.fileno ());
+            }
+        }
+    }
+
+    [CCode (has_type_id = false)]
+    public enum ColorSettings {
+        NEVER,
+        ALWAYS,
+        AUTO;
+
+        internal inline ColorStats to_color_stats () {
+            switch (this) {
+            case ALWAYS: return ColorStats.YES;
+            case NEVER: return ColorStats.NO;
+            default: return Log.writer_supports_color (stderr.fileno ()) ? ColorStats.YES : ColorStats.NO;
+            }
+        }
     }
 
     [CCode (has_type_id = false)]
@@ -71,45 +95,30 @@ public class Varallel.Reporter {
 
         public inline unowned string to_string () {
             switch (this) {
-            case RESET:
-                return ANSI_RESET;
-            case RED:
-                return ANSI_RED;
-            case GREEN:
-                return ANSI_GREEN;
-            case YELLOW:
-                return ANSI_YELLOW;
-            case BLUE:
-                return ANSI_BLUE;
-            case MAGENTA:
-                return ANSI_MAGENTA;
-            case CYAN:
-                return ANSI_CYAN;
-            case WHITE:
-                return ANSI_WHITE;
-            case BOLD:
-                return ANSI_BOLD;
-            case UNDERLINE:
-                return ANSI_UNDERLINE;
-            case BLINK:
-                return ANSI_BLINK;
-            case DIM:
-                return ANSI_DIM;
-            case HIDDEN:
-                return ANSI_HIDDEN;
-            case INVERT:
-                return ANSI_INVERT;
-            default:
-                return ANSI_RESET;
+            case RESET: return ANSI_RESET;
+            case RED: return ANSI_RED;
+            case GREEN: return ANSI_GREEN;
+            case YELLOW: return ANSI_YELLOW;
+            case BLUE: return ANSI_BLUE;
+            case MAGENTA: return ANSI_MAGENTA;
+            case CYAN: return ANSI_CYAN;
+            case WHITE: return ANSI_WHITE;
+            case BOLD: return ANSI_BOLD;
+            case UNDERLINE: return ANSI_UNDERLINE;
+            case BLINK: return ANSI_BLINK;
+            case DIM: return ANSI_DIM;
+            case HIDDEN: return ANSI_HIDDEN;
+            case INVERT: return ANSI_INVERT;
+            default: return ANSI_RESET;
             }
         }
     }
 
     public static inline void report_failed_command (string command, int status) {
-        if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
-            in_tty_stats = (Log.writer_supports_color (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
+        if (unlikely (color_stats == ColorStats.UNKNOWN)) {
+            color_stats = color_setting.to_color_stats ();
         }
-        if (in_tty_stats == InTTYStats.YES) {
+        if (color_stats.to_bool ()) {
             stderr.printf ("Command `%s%s%s' failed with status: %s%d%s\n",
                 Reporter.EscapeCode.ANSI_BOLD + EscapeCode.ANSI_YELLOW,
                 command,
@@ -125,10 +134,10 @@ public class Varallel.Reporter {
     }
 
     public static inline void report (string color_code, string domain_name, string msg, va_list args) {
-        if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
-            in_tty_stats = (Log.writer_supports_color (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
+        if (unlikely (color_stats == ColorStats.UNKNOWN)) {
+            color_stats = color_setting.to_color_stats ();
         }
-        if (in_tty_stats == InTTYStats.YES) {
+        if (color_stats.to_bool ()) {
             stderr.puts (Reporter.EscapeCode.ANSI_BOLD.concat (
                     color_code,
                     domain_name,
@@ -159,12 +168,12 @@ public class Varallel.Reporter {
     }
 
     public static void clear_putserr (string msg, bool show_progress_bar = true) {
-        if (unlikely (in_tty_stats == InTTYStats.UNKNOWN)) {
-            in_tty_stats = (Log.writer_supports_color (stderr.fileno ())) ? InTTYStats.YES : InTTYStats.NO;
+        if (unlikely (color_stats == ColorStats.UNKNOWN)) {
+            color_stats = color_setting.to_color_stats ();
         }
         if (show_progress_bar) {
             stderr.printf ("\r%s\r%s",
-                string.nfill ((in_tty_stats == InTTYStats.YES) ? get_console_width () : 0, ' '),
+                string.nfill (get_console_width (), ' '),
                 msg);
         } else {
             stderr.puts (msg);
@@ -182,7 +191,6 @@ public class Varallel.ProgressBar {
     int current_step = 0;
     char fill_char;
     char empty_char;
-    bool in_tty;
 
     public ProgressBar (int total_steps,
                         string title = "Progress",
@@ -192,7 +200,6 @@ public class Varallel.ProgressBar {
         this.total_steps = total_steps;
         this.fill_char = fill_char;
         this.empty_char = empty_char;
-        this.in_tty = Log.writer_supports_color (stderr.fileno ());
     }
 
     public inline int update (uint success_count, uint failure_count) {
@@ -208,7 +215,10 @@ public class Varallel.ProgressBar {
         // ANSI escapecode should not be counted
         var prefix = "\rSuccess: %u Failure: %u ".printf (success_count, failure_count);
         var prelength = prefix.length - 1; // -1 for \r
-        if (in_tty) {
+        if (unlikely (Reporter.color_stats == Reporter.ColorStats.UNKNOWN)) {
+            Reporter.color_stats = Reporter.color_setting.to_color_stats ();
+        }
+        if (Reporter.color_stats.to_bool ()) {
             // Optimized for string literal concatenation:
             // Use `+` to concatenate string literals
             // so that the compiler can optimize it to a single string literal at compile time
@@ -232,7 +242,7 @@ public class Varallel.ProgressBar {
         // 12 is the length of ": [] 100.00%"
         int bar_length = Reporter.get_console_width () - prelength - title.length - 12;
         // Only the the effictive length of progressbar is no less than 5, the progressbar will be shown
-        if (in_tty && bar_length >= 5) {
+        if (Reporter.color_stats.to_bool () && bar_length >= 5) {
             builder.append (": [");
             var fill_length = (int) (percentage / 100.0 * bar_length);
             builder.append (Reporter.EscapeCode.ANSI_INVERT);

@@ -41,6 +41,7 @@ Options:
   --hide-bar                  Hide progress bar
   --bar                       Show progress bar (Default behavior)
   --print-only                Only print the command but not run
+  --color=WHEN                Enable color output, options are 'always', 'never', or 'auto'
 
 Replacements in cammand:
   {}                          Input argument
@@ -94,6 +95,9 @@ For more information, or to report bugs, please visit:
   * If both `--hide-bar` and `--bar` are provided, the program will take the last option.
 * `--print-only`
   * Only print the command but not run.
+* `--color=WHEN`
+  * Enable color output. Options are `always`, `never`, or `auto`.
+  * If `--color` is not provided, the program will use the `auto` option.
 
 * If there are more than one `:::` or `::::` in the command line, the replacement strings will be the Cartesian product of the argument lists.
   * Example:
