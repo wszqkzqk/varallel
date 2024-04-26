@@ -23,38 +23,38 @@
 public class Varallel.Reporter {
     /* Reporter is a class that provides a set of functions to report errors, warnings, and progress. */
 
-    static ColorStats color_stats = ColorStats.UNKNOWN;
+    internal static ColorStats color_stats = ColorStats.UNKNOWN;
     public static ColorSettings color_setting = ColorSettings.AUTO;
 
     [CCode (cheader_filename = "bindings.h", cname = "get_console_width")]
     public extern static int get_console_width ();
 
     [CCode (has_type_id = false)]
-    public enum ColorStats {
+    internal enum ColorStats {
         NO,
         YES,
-        UNKNOWN
+        UNKNOWN;
+
+        internal inline bool to_bool () {
+            switch (this) {
+            case YES: return true;
+            case NO: return false;
+            default: return Log.writer_supports_color (stderr.fileno ());
+            }
+        }
     }
 
     [CCode (has_type_id = false)]
     public enum ColorSettings {
-        AUTO,
+        NEVER,
         ALWAYS,
-        NEVER;
+        AUTO;
 
-        public inline ColorStats to_color_stats () {
+        internal inline ColorStats to_color_stats () {
             switch (this) {
             case ALWAYS: return ColorStats.YES;
             case NEVER: return ColorStats.NO;
             default: return Log.writer_supports_color (stderr.fileno ()) ? ColorStats.YES : ColorStats.NO;
-            }
-        }
-
-        public inline bool to_bool () {
-            switch (this) {
-            case ALWAYS: return true;
-            case NEVER: return false;
-            default: return Log.writer_supports_color (stderr.fileno ());
             }
         }
     }
@@ -118,7 +118,7 @@ public class Varallel.Reporter {
         if (unlikely (color_stats == ColorStats.UNKNOWN)) {
             color_stats = color_setting.to_color_stats ();
         }
-        if (color_stats == ColorStats.YES) {
+        if (color_stats.to_bool ()) {
             stderr.printf ("Command `%s%s%s' failed with status: %s%d%s\n",
                 Reporter.EscapeCode.ANSI_BOLD + EscapeCode.ANSI_YELLOW,
                 command,
@@ -137,7 +137,7 @@ public class Varallel.Reporter {
         if (unlikely (color_stats == ColorStats.UNKNOWN)) {
             color_stats = color_setting.to_color_stats ();
         }
-        if (color_stats == ColorStats.YES) {
+        if (color_stats.to_bool ()) {
             stderr.puts (Reporter.EscapeCode.ANSI_BOLD.concat (
                     color_code,
                     domain_name,
@@ -215,7 +215,10 @@ public class Varallel.ProgressBar {
         // ANSI escapecode should not be counted
         var prefix = "\rSuccess: %u Failure: %u ".printf (success_count, failure_count);
         var prelength = prefix.length - 1; // -1 for \r
-        if (Reporter.color_setting.to_bool ()) {
+        if (unlikely (Reporter.color_stats == Reporter.ColorStats.UNKNOWN)) {
+            Reporter.color_stats = Reporter.color_setting.to_color_stats ();
+        }
+        if (Reporter.color_stats.to_bool ()) {
             // Optimized for string literal concatenation:
             // Use `+` to concatenate string literals
             // so that the compiler can optimize it to a single string literal at compile time
@@ -239,7 +242,7 @@ public class Varallel.ProgressBar {
         // 12 is the length of ": [] 100.00%"
         int bar_length = Reporter.get_console_width () - prelength - title.length - 12;
         // Only the the effictive length of progressbar is no less than 5, the progressbar will be shown
-        if (Reporter.color_setting.to_bool () && bar_length >= 5) {
+        if (Reporter.color_stats.to_bool () && bar_length >= 5) {
             builder.append (": [");
             var fill_length = (int) (percentage / 100.0 * bar_length);
             builder.append (Reporter.EscapeCode.ANSI_INVERT);
