@@ -39,13 +39,17 @@ static inline int get_console_width () {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     int columns;
     // GetConsoleScreenBufferInfo will return 0 if it FAILS
-    int success = GetConsoleScreenBufferInfo(GetStdHandle(STD_ERROR_HANDLE), &csbi);
+    int success = GetConsoleScreenBufferInfo (GetStdHandle (STD_ERROR_HANDLE), &csbi);
     if (success) {
         columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
         return (int) columns;
     } else {
         return 0;
     }
+}
+
+static inline gboolean is_a_tty (int fd) {
+    return (gboolean) (_isatty (fd) != 0);
 }
 #else
 #include <sys/ioctl.h>
@@ -58,7 +62,11 @@ static inline int get_console_width () {
     if (fail) {
         return 0;
     } else {
-        return w.ws_col;
+        return (int) w.ws_col;
     }
+}
+
+static inline gboolean is_a_tty (int fd) {
+    return (gboolean) (isatty (fd) != 0);
 }
 #endif
