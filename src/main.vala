@@ -207,7 +207,7 @@ public class Varallel.CLI {
         // g_print will force to convert character set to windows's code page
         // which is imcompatible windows's bash, zsh, etc.
         opt_context.set_help_enabled (false);
-        opt_context.set_description ("Replacements in cammand:
+        opt_context.set_description ("Replacements in command:
   {}                          Input argument
   {.}                         Input argument without extension
   {/}                         Basename of input line
