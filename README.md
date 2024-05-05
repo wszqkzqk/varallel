@@ -43,7 +43,7 @@ Options:
   --print-only                Only print the command but not run
   --color=WHEN                Enable color output, options are 'always', 'never', or 'auto'
 
-Replacements in cammand:
+Replacements in command:
   {}                          Input argument
   {.}                         Input argument without extension
   {/}                         Basename of input line
