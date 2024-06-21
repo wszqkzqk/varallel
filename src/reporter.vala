@@ -31,6 +31,13 @@ public class Varallel.Reporter {
     [CCode (cheader_filename = "bindings.h", cname = "get_console_width")]
     public extern static int get_console_width ();
 
+    /*
+        ColorStats is an enum that represents the support of color output in the terminal.
+
+        * YES: The terminal supports color output and the user has not disabled it.
+        * NO: The terminal does not support color output or the user has disabled it.
+        * UNKNOWN: The support of color output is unknown.
+    */
     [CCode (has_type_id = false)]
     internal enum ColorStats {
         NO,
@@ -46,6 +53,13 @@ public class Varallel.Reporter {
         }
     }
 
+    /*
+        ColorSettings is an enum that represents the setting of color output in the terminal.
+
+        * NEVER: Disable color output.
+        * ALWAYS: Enable color output.
+        * AUTO: Automatically detect the support of color output.
+    */
     [CCode (has_type_id = false)]
     public enum ColorSettings {
         NEVER,
@@ -61,8 +75,10 @@ public class Varallel.Reporter {
         }
     }
 
+    /* EscapeCode is an enum that represents the ANSI escape code for text formatting. */
     [CCode (has_type_id = false)]
     public enum EscapeCode {
+
         RESET,
         RED,
         GREEN,
@@ -117,6 +133,14 @@ public class Varallel.Reporter {
     }
 
     public static inline void report_failed_command (string command, int status) {
+        /**
+        * report_failed_command:
+        * @command: The command that failed.
+        * @status: The status code of the command.
+        *
+        * Report a failed command with the command and status code.
+        */
+
         if (unlikely (color_stats == ColorStats.UNKNOWN)) {
             color_stats = color_setting.to_color_stats ();
         }
@@ -136,6 +160,15 @@ public class Varallel.Reporter {
     }
 
     public static inline void report (string color_code, string domain_name, string msg, va_list args) {
+        /**
+        * report:
+        * @color_code: The ANSI escape code for text formatting.
+        * @domain_name: The domain name of the message.
+        * @msg: The message to be reported.
+        * @args: The printf-styled arguments for the message.
+        *
+        * Report a message with the domain name and message.
+        */
         if (unlikely (color_stats == ColorStats.UNKNOWN)) {
             color_stats = color_setting.to_color_stats ();
         }
@@ -156,20 +189,48 @@ public class Varallel.Reporter {
 
     [PrintfFormat]
     public static void error (string error_name, string msg, ...) {
+        /**
+        * error:
+        * @error_name: The name of the error.
+        * @msg: The message to be reported.
+        *
+        * Report an error with the name and message.
+        */
         report (Reporter.EscapeCode.ANSI_RED, error_name, msg, va_list ());
     }
 
     [PrintfFormat]
     public static void warning (string warning_name, string msg, ...) {
+        /**
+        * warning:
+        * @warning_name: The name of the warning.
+        * @msg: The message to be reported.
+        *
+        * Report a warning with the name and message.
+        */
         report (Reporter.EscapeCode.ANSI_MAGENTA, warning_name, msg, va_list ());
     }
 
     [PrintfFormat]
     public static void info (string info_name, string msg, ...) {
+        /**
+        * info:
+        * @info_name: The name of the information.
+        * @msg: The message to be reported.
+        *
+        * Report an information with the name and message.
+        */
         report (Reporter.EscapeCode.ANSI_CYAN, info_name, msg, va_list ());
     }
 
     public static void clear_putserr (string msg, bool show_progress_bar = true) {
+        /**
+        * clear_putserr:
+        * @msg: The message to be reported.
+        * @show_progress_bar: Whether to show the progress bar.
+        *
+        * Clear the current line of stderr and print the message.
+        */
         if (unlikely (color_stats == ColorStats.UNKNOWN)) {
             color_stats = color_setting.to_color_stats ();
         }
@@ -198,6 +259,15 @@ public class Varallel.ProgressBar {
                         string title = "Progress",
                         char fill_char = '#',
                         char empty_char = '-') {
+        /**
+        * ProgressBar:
+        * @total_steps: The total number of steps.
+        * @title: The title of the progress bar.
+        * @fill_char: The character to fill the progress bar.
+        * @empty_char: The character to fill the empty part of the progress bar.
+        *
+        * Create a new progress bar with the total number of steps, title, fill character, and empty character.
+        */
         this.title = title;
         this.total_steps = total_steps;
         this.fill_char = fill_char;
@@ -205,6 +275,13 @@ public class Varallel.ProgressBar {
     }
 
     public inline int update (uint success_count, uint failure_count) {
+        /**
+        * update:
+        * @success_count: The number of successful steps.
+        * @failure_count: The number of failed steps.
+        *
+        * Update the progress bar with the number of successful steps and failed steps.
+        */
         current_step += 1;
         current_step = (current_step > total_steps) ? total_steps : current_step;
         percentage = (double) current_step / total_steps * 100.0;
@@ -213,6 +290,13 @@ public class Varallel.ProgressBar {
     }
 
     public inline void print_progress (uint success_count, uint failure_count) {
+        /**
+        * print_progress:
+        * @success_count: The number of successful steps.
+        * @failure_count: The number of failed steps.
+        *
+        * Print the progress bar with the number of successful steps and failed steps.
+        */
         // The actual length of the prefix is the length of UNCOLORED prefix
         // ANSI escapecode should not be counted
         var prefix = "\rSuccess: %u Failure: %u ".printf (success_count, failure_count);
