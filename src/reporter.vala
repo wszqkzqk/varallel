@@ -19,8 +19,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
-[Compact (opaque = true)]
-public class Varallel.Reporter {
+namespace Varallel.Reporter {
     /* Reporter is a class that provides a set of functions to report errors, warnings, and progress. */
 
     internal static ColorStats color_stats = ColorStats.UNKNOWN;
