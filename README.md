@@ -118,7 +118,6 @@ For more information, or to report bugs, please visit:
 
 ```bash
 seq 1 6 | varallel echo
-seq 1 6 | varallel echo
 varallel echo < <(seq 3 7)
 ```
 
