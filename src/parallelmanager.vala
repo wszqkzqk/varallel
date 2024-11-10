@@ -29,7 +29,7 @@ public class Varallel.ParallelManager {
     string? shell = null;
     string shell_args = "-c";
     static Regex slot_in_command = null;
-    ProgressBar progress_bar = null;
+    Reporter.ProgressBar progress_bar = null;
     public bool show_progress_bar = false;
     Mutex mutex = Mutex ();
     bool hide_sub_output = false;
@@ -70,7 +70,7 @@ public class Varallel.ParallelManager {
         this.show_progress_bar = show_progress_bar;
         this.hide_sub_output = hide_sub_output;
         if (show_progress_bar) {
-            progress_bar = new ProgressBar (original_args.length);
+            progress_bar = new Reporter.ProgressBar (original_args.length);
         }
         if (use_shell) {
             choose_shell (shell);

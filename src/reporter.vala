@@ -17,67 +17,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * SPDX-License-Identifier: LGPL-2.1-or-later
- */
+*/
 
-namespace Varallel.Reporter {
-    /* Reporter is a class that provides a set of functions to report errors, warnings, and progress. */
+[Compact (opaque = true)]
+public class Varallel.Reporter {
 
-    internal static ColorStats color_stats = ColorStats.UNKNOWN;
     public static ColorSettings color_setting = ColorSettings.AUTO;
 
-    [CCode (cheader_filename = "bindings.h", cname = "is_a_tty")]
+    [CCode (cheader_filename = "platformbindings.h", cname = "is_a_tty")]
     public extern static bool isatty (int fd);
-    [CCode (cheader_filename = "bindings.h", cname = "get_console_width")]
+    [CCode (cheader_filename = "platformbindings.h", cname = "get_console_width")]
     public extern static int get_console_width ();
 
-    /*
-        ColorStats is an enum that represents the support of color output in the terminal.
-
-        * YES: The terminal supports color output and the user has not disabled it.
-        * NO: The terminal does not support color output or the user has disabled it.
-        * UNKNOWN: The support of color output is unknown.
-    */
-    [CCode (has_type_id = false)]
-    internal enum ColorStats {
-        NO,
-        YES,
-        UNKNOWN;
-
-        internal inline bool to_bool () {
-            switch (this) {
-            case YES: return true;
-            case NO: return false;
-            default: return Log.writer_supports_color (stderr.fileno ());
-            }
-        }
-    }
-
-    /*
-        ColorSettings is an enum that represents the setting of color output in the terminal.
-
-        * NEVER: Disable color output.
-        * ALWAYS: Enable color output.
-        * AUTO: Automatically detect the support of color output.
-    */
     [CCode (has_type_id = false)]
     public enum ColorSettings {
         NEVER,
         ALWAYS,
         AUTO;
 
-        internal inline ColorStats to_color_stats () {
+        public bool to_bool () {
             switch (this) {
-            case ALWAYS: return ColorStats.YES;
-            case NEVER: return ColorStats.NO;
-            default: return Log.writer_supports_color (stderr.fileno ()) ? ColorStats.YES : ColorStats.NO;
+            case NEVER: return false;
+            case ALWAYS: return true;
+            default: return Log.writer_supports_color (stderr.fileno ());
             }
         }
     }
 
-    /* EscapeCode is an enum that represents the ANSI escape code for text formatting. */
     [CCode (has_type_id = false)]
     public enum EscapeCode {
-
         RESET,
         RED,
         GREEN,
@@ -110,7 +78,7 @@ namespace Varallel.Reporter {
         public const string ANSI_INVERT = "\x1b[7m";
         public const string ANSI_RESET = "\x1b[0m";
 
-        public inline unowned string to_string () {
+        public unowned string to_string () {
             switch (this) {
             case RESET: return ANSI_RESET;
             case RED: return ANSI_RED;
@@ -131,19 +99,14 @@ namespace Varallel.Reporter {
         }
     }
 
-    public static inline void report_failed_command (string command, int status) {
-        /**
-        * report_failed_command:
-        * @command: The command that failed.
-        * @status: The status code of the command.
-        *
-        * Report a failed command with the command and status code.
-        */
-
-        if (unlikely (color_stats == ColorStats.UNKNOWN)) {
-            color_stats = color_setting.to_color_stats ();
-        }
-        if (color_stats.to_bool ()) {
+    /**
+     * Reports a failed command with its status.
+     *
+     * @param command The command that failed.
+     * @param status The status code of the failed command.
+    */
+    public static void report_failed_command (string command, int status) {
+        if (color_setting.to_bool ()) {
             stderr.printf ("Command `%s%s%s' failed with status: %s%d%s\n",
                 Reporter.EscapeCode.ANSI_BOLD + EscapeCode.ANSI_YELLOW,
                 command,
@@ -158,20 +121,16 @@ namespace Varallel.Reporter {
             status);
     }
 
-    public static inline void report (string color_code, string domain_name, string msg, va_list args) {
-        /**
-        * report:
-        * @color_code: The ANSI escape code for text formatting.
-        * @domain_name: The domain name of the message.
-        * @msg: The message to be reported.
-        * @args: The printf-styled arguments for the message.
-        *
-        * Report a message with the domain name and message.
-        */
-        if (unlikely (color_stats == ColorStats.UNKNOWN)) {
-            color_stats = color_setting.to_color_stats ();
-        }
-        if (color_stats.to_bool ()) {
+    /**
+     * Reports a message with optional color code and domain name.
+     *
+     * @param color_code The color code to apply to the message. Can be null.
+     * @param domain_name The domain name associated with the message.
+     * @param msg The message to report.
+     * @param args The arguments to format the message.
+    */
+    public static void report (string color_code, string domain_name, string msg, va_list args) {
+        if (color_setting.to_bool ()) {
             stderr.puts (Reporter.EscapeCode.ANSI_BOLD.concat (
                     color_code,
                     domain_name,
@@ -186,53 +145,49 @@ namespace Varallel.Reporter {
         stderr.puts (domain_name.concat (": ", msg.vprintf (args), "\n"));
     }
 
+    /**
+     * Reports an error with the specified error name and message.
+     *
+     * @param error_name The name of the error.
+     * @param msg The error message.
+     * @param ... Additional arguments for the error message.
+    */
     [PrintfFormat]
     public static void error (string error_name, string msg, ...) {
-        /**
-        * error:
-        * @error_name: The name of the error.
-        * @msg: The message to be reported.
-        *
-        * Report an error with the name and message.
-        */
         report (Reporter.EscapeCode.ANSI_RED, error_name, msg, va_list ());
     }
 
+    /**
+     * Prints a warning message with the specified warning name and message.
+     *
+     * @param warning_name The name of the warning.
+     * @param msg The warning message.
+     * @param ... Additional arguments for the message format.
+    */
     [PrintfFormat]
     public static void warning (string warning_name, string msg, ...) {
-        /**
-        * warning:
-        * @warning_name: The name of the warning.
-        * @msg: The message to be reported.
-        *
-        * Report a warning with the name and message.
-        */
         report (Reporter.EscapeCode.ANSI_MAGENTA, warning_name, msg, va_list ());
     }
 
+    /**
+     * Print an informational message.
+     *
+     * @param info_name The name of the information.
+     * @param msg The message to be printed.
+     * @param ... Additional arguments to be formatted.
+    */
     [PrintfFormat]
     public static void info (string info_name, string msg, ...) {
-        /**
-        * info:
-        * @info_name: The name of the information.
-        * @msg: The message to be reported.
-        *
-        * Report an information with the name and message.
-        */
         report (Reporter.EscapeCode.ANSI_CYAN, info_name, msg, va_list ());
     }
 
+    /**
+     * Clears the standard error output and prints a message.
+     *
+     * @param msg The message to be printed.
+     * @param show_progress_bar Whether to show a progress bar or not. Default is true.
+    */
     public static void clear_putserr (string msg, bool show_progress_bar = true) {
-        /**
-        * clear_putserr:
-        * @msg: The message to be reported.
-        * @show_progress_bar: Whether to show the progress bar.
-        *
-        * Clear the current line of stderr and print the message.
-        */
-        if (unlikely (color_stats == ColorStats.UNKNOWN)) {
-            color_stats = color_setting.to_color_stats ();
-        }
         if (show_progress_bar) {
             stderr.printf ("\r%s\r%s",
                 string.nfill (get_console_width (), ' '),
@@ -241,103 +196,111 @@ namespace Varallel.Reporter {
             stderr.puts (msg);
         }
     }
-}
 
-[Compact (opaque = true)]
-public class Varallel.ProgressBar {
-    /* ProgressBar is a class that provides a set of functions to show progress bar. */
+    /**
+     * @class LivePhotoConv.Reporter.ProgressBar
+     * @brief A progress bar class for displaying progress in the terminal.
+     *
+     * The ProgressBar class provides a simple implementation of a progress bar that
+     * can display the progress of operations in the terminal, including counts of
+     * successes and failures.
+     */
+    [Compact (opaque = true)]
+    public class ProgressBar {
 
-    string title;
-    double percentage = 0.0;
-    int total_steps;
-    int current_step = 0;
-    char fill_char;
-    char empty_char;
+        string title;
+        double percentage = 0.0;
+        int total_steps;
+        int current_step = 0;
+        char fill_char;
+        char empty_char;
 
-    public ProgressBar (int total_steps,
-                        string title = "Progress",
-                        char fill_char = '#',
-                        char empty_char = '-') {
         /**
-        * ProgressBar:
-        * @total_steps: The total number of steps.
-        * @title: The title of the progress bar.
-        * @fill_char: The character to fill the progress bar.
-        * @empty_char: The character to fill the empty part of the progress bar.
-        *
-        * Create a new progress bar with the total number of steps, title, fill character, and empty character.
-        */
-        this.title = title;
-        this.total_steps = total_steps;
-        this.fill_char = fill_char;
-        this.empty_char = empty_char;
-    }
+         * Constructs a ProgressBar object.
+         *
+         * @param total_steps The total number of steps.
+         * @param title The title of the progress bar, defaults to "Progress".
+         * @param fill_char The character for the completed portion, defaults to '#'.
+         * @param empty_char The character for the incomplete portion, defaults to '-'.
+         */
+        public ProgressBar (int total_steps,
+                            string title = "Progress",
+                            char fill_char = '#',
+                            char empty_char = '-') {
+            this.title = title;
+            this.total_steps = total_steps;
+            this.fill_char = fill_char;
+            this.empty_char = empty_char;
+        }
 
-    public inline int update (uint success_count, uint failure_count) {
         /**
-        * update:
-        * @success_count: The number of successful steps.
-        * @failure_count: The number of failed steps.
-        *
-        * Update the progress bar with the number of successful steps and failed steps.
-        */
-        current_step += 1;
-        current_step = (current_step > total_steps) ? total_steps : current_step;
-        percentage = (double) current_step / total_steps * 100.0;
-        print_progress (success_count, failure_count);
-        return current_step;
-    }
+         * Updates the progress bar state.
+         *
+         * @param success_count The number of successes.
+         * @param failure_count The number of failures.
+         * @return The current step number.
+         */
+        public int update (uint success_count, uint failure_count) {
+            current_step += 1;
+            current_step = (current_step > total_steps) ? total_steps : current_step;
+            percentage = (double) current_step / total_steps * 100.0;
+            print_progress (success_count, failure_count);
+            return current_step;
+        }
 
-    public inline void print_progress (uint success_count, uint failure_count) {
         /**
-        * print_progress:
-        * @success_count: The number of successful steps.
-        * @failure_count: The number of failed steps.
-        *
-        * Print the progress bar with the number of successful steps and failed steps.
-        */
-        // The actual length of the prefix is the length of UNCOLORED prefix
-        // ANSI escapecode should not be counted
-        var prefix = "\rSuccess: %u Failure: %u ".printf (success_count, failure_count);
-        var prelength = prefix.length - 1; // -1 for \r
-        if (unlikely (Reporter.color_stats == Reporter.ColorStats.UNKNOWN)) {
-            Reporter.color_stats = Reporter.color_setting.to_color_stats ();
+         * Prints the current progress bar to the standard error output.
+         *
+         * @param success_count The number of successes.
+         * @param failure_count The number of failures.
+         */
+        public void print_progress (uint success_count, uint failure_count) {
+            // The actual length of the prefix is the length of UNCOLORED prefix
+            // ANSI escapecode should not be counted
+            var prefix = "\rSuccess: %u Failure: %u ".printf (success_count, failure_count);
+            var prelength = prefix.length - 1; // -1 for \r
+            if (Reporter.color_setting.to_bool ()) {
+                // Optimized for string literal concatenation:
+                // Use `+` to concatenate string literals
+                // so that the compiler can optimize it to a single string literal at compile time
+                // But still use `concat` to concatenate non-literal strings, use `,` to split args
+                prefix = "\r".concat (
+                    Reporter.EscapeCode.ANSI_BOLD +
+                    Reporter.EscapeCode.ANSI_GREEN +
+                    "Success: ",
+                    success_count.to_string (),
+                    Reporter.EscapeCode.ANSI_RESET +
+                    " " +
+                    Reporter.EscapeCode.ANSI_BOLD +
+                    Reporter.EscapeCode.ANSI_RED +
+                    "Failure: ",
+                    failure_count.to_string (),
+                    Reporter.EscapeCode.ANSI_RESET +
+                    " ");
+            }
+            var builder = new StringBuilder (prefix);
+            builder.append (title);
+            // 12 is the length of ": [] 100.00%"
+            int bar_length = Reporter.get_console_width () - prelength - title.length - 12;
+            // Only the the effictive length of progressbar is no less than 5, the progressbar will be shown
+            if (Reporter.color_setting.to_bool () && bar_length >= 5) {
+                builder.append (": [");
+                var fill_length = (int) (percentage / 100.0 * bar_length);
+                builder.append (Reporter.EscapeCode.ANSI_INVERT);
+                builder.append (string.nfill (fill_length, fill_char));
+                builder.append (Reporter.EscapeCode.ANSI_RESET);
+                builder.append (string.nfill (bar_length - fill_length, empty_char));
+                builder.append_printf ("] %6.2f%%", percentage);
+            } else if (isatty (stderr.fileno ()) && bar_length >= 5) {
+                builder.append (": [");
+                var fill_length = (int) (percentage / 100.0 * bar_length);
+                builder.append (string.nfill (fill_length, fill_char));
+                builder.append (string.nfill (bar_length - fill_length, empty_char));
+                builder.append_printf ("] %6.2f%%", percentage);
+            } else {
+                builder.append_printf (": %6.2f%%", percentage);
+            }
+            stderr.puts (builder.str);
         }
-        if (Reporter.color_stats.to_bool ()) {
-            // Optimized for string literal concatenation:
-            // Use `+` to concatenate string literals
-            // so that the compiler can optimize it to a single string literal at compile time
-            // But still use `concat` to concatenate non-literal strings, use `,` to split args
-            prefix = "\r".concat (
-                Reporter.EscapeCode.ANSI_BOLD +
-                Reporter.EscapeCode.ANSI_GREEN +
-                "Success: ",
-                success_count.to_string (),
-                Reporter.EscapeCode.ANSI_RESET +
-                " " +
-                Reporter.EscapeCode.ANSI_BOLD +
-                Reporter.EscapeCode.ANSI_RED +
-                "Failure: ",
-                failure_count.to_string (),
-                Reporter.EscapeCode.ANSI_RESET +
-                " ");
-        }
-        var builder = new StringBuilder (prefix);
-        builder.append (title);
-        // 12 is the length of ": [] 100.00%"
-        int bar_length = Reporter.get_console_width () - prelength - title.length - 12;
-        // Only the the effictive length of progressbar is no less than 5, the progressbar will be shown
-        if (Reporter.color_stats.to_bool () && bar_length >= 5) {
-            builder.append (": [");
-            var fill_length = (int) (percentage / 100.0 * bar_length);
-            builder.append (Reporter.EscapeCode.ANSI_INVERT);
-            builder.append (string.nfill (fill_length, fill_char));
-            builder.append (Reporter.EscapeCode.ANSI_RESET);
-            builder.append (string.nfill (bar_length - fill_length, empty_char));
-            builder.append_printf ("] %6.2f%%", percentage);
-        } else {
-            builder.append_printf (": %6.2f%%", percentage);
-        }
-        stderr.puts (builder.str);
     }
 }
