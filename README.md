@@ -121,6 +121,13 @@ seq 1 6 | varallel echo
 varallel echo < <(seq 3 7)
 ```
 
+Tip: You may also use `varallel` with `find` command:
+
+```bash
+find . -name '*.txt' | varallel cat
+find . -type f | varallel 'echo "{}"'
+```
+
 #### Use command lines
 
 `varallel` can read the argument lists from the command line.
