@@ -5,10 +5,11 @@ version_file = vcs_tag(
 )
 
 executable_sources = [
-  'unit.vala',
-  'parallelmanager.vala',
   'main.vala',
+  'parallelmanager.vala',
+  'platformbindings.c',
   'reporter.vala',
+  'unit.vala',
   version_file,
 ]
 
@@ -22,5 +23,5 @@ basic_deps = [
 executable('varallel', executable_sources,
   dependencies: basic_deps,
   install: true,
-  include_directories: incdir,
+  # include_directories: incdir,
 )

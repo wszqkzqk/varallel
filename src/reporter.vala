@@ -1,6 +1,4 @@
-/* reporter.vala
- *
- * Copyright 2024 Zhou Qiankang <wszqkzqk@qq.com>
+/* Copyright 2024 Zhou Qiankang <wszqkzqk@qq.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,14 +17,18 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
 */
 
+/**
+ * The Reporter class provides methods to report failed commands, general messages,
+ * errors, and warnings. It supports color-coded output based on the terminal's capabilities.
+*/
 [Compact (opaque = true)]
 public class Varallel.Reporter {
 
     public static ColorSettings color_setting = ColorSettings.AUTO;
 
-    [CCode (cheader_filename = "platformbindings.h", cname = "is_a_tty")]
+    [CCode (cname = "is_a_tty")]
     public extern static bool isatty (int fd);
-    [CCode (cheader_filename = "platformbindings.h", cname = "get_console_width")]
+    [CCode (cname = "get_console_width")]
     public extern static int get_console_width ();
 
     [CCode (has_type_id = false)]
@@ -107,7 +109,7 @@ public class Varallel.Reporter {
     */
     public static void report_failed_command (string command, int status) {
         if (color_setting.to_bool ()) {
-            stderr.printf ("Command `%s%s%s' failed with status: %s%d%s\n",
+            printerr ("Command `%s%s%s' failed with status: %s%d%s\n",
                 Reporter.EscapeCode.ANSI_BOLD + EscapeCode.ANSI_YELLOW,
                 command,
                 Reporter.EscapeCode.ANSI_RESET,
@@ -116,13 +118,13 @@ public class Varallel.Reporter {
                 Reporter.EscapeCode.ANSI_RESET);
             return;
         }
-        stderr.printf ("Command `%s' failed with status: %d\n",
+        printerr ("Command `%s' failed with status: %d\n",
             command,
             status);
     }
 
     /**
-     * Reports a message with optional color code and domain name.
+     * Reports a message with optional color code and domain name. (with printf-style arguments)
      *
      * @param color_code The color code to apply to the message. Can be null.
      * @param domain_name The domain name associated with the message.
@@ -131,7 +133,7 @@ public class Varallel.Reporter {
     */
     public static void report (string color_code, string domain_name, string msg, va_list args) {
         if (color_setting.to_bool ()) {
-            stderr.puts (Reporter.EscapeCode.ANSI_BOLD.concat (
+            printerr ("%s", Reporter.EscapeCode.ANSI_BOLD.concat (
                     color_code,
                     domain_name,
                     Reporter.EscapeCode.ANSI_RESET +
@@ -142,11 +144,34 @@ public class Varallel.Reporter {
                     "\n"));
             return;
         }
-        stderr.puts (domain_name.concat (": ", msg.vprintf (args), "\n"));
+        printerr ("%s: %s\n", domain_name, msg.vprintf (args));
+    }
+
+    /*
+     * Reports a message with optional color code and domain name. (no printf-style arguments)
+     *
+     * @param color_code The color code to apply to the message. Can be null.
+     * @param domain_name The domain name associated with the message.
+     * @param msg The message to report.
+     */
+    public static void report_puts (string color_code, string domain_name, string msg) {
+        if (color_setting.to_bool ()) {
+            printerr ("%s", Reporter.EscapeCode.ANSI_BOLD.concat (
+                    color_code,
+                    domain_name,
+                    Reporter.EscapeCode.ANSI_RESET +
+                    ": " +
+                    Reporter.EscapeCode.ANSI_BOLD,
+                    msg,
+                    Reporter.EscapeCode.ANSI_RESET +
+                    "\n"));
+            return;
+        }
+        printerr ("%s: %s\n", domain_name, msg);
     }
 
     /**
-     * Reports an error with the specified error name and message.
+     * Reports an error with the specified error name and message. (with printf-style arguments)
      *
      * @param error_name The name of the error.
      * @param msg The error message.
@@ -158,7 +183,18 @@ public class Varallel.Reporter {
     }
 
     /**
-     * Prints a warning message with the specified warning name and message.
+     * Reports an error with the specified error name and message. (no printf-style arguments)
+     *
+     * @param error_name The name of the error.
+     * @param msg The error message.
+     * @param ... Additional arguments for the error message.
+    */
+    public static void error_puts (string error_name, string msg) {
+        report_puts (Reporter.EscapeCode.ANSI_RED, error_name, msg);
+    }
+
+    /**
+     * Prints a warning message with the specified warning name and message. (with printf-style arguments)
      *
      * @param warning_name The name of the warning.
      * @param msg The warning message.
@@ -167,6 +203,17 @@ public class Varallel.Reporter {
     [PrintfFormat]
     public static void warning (string warning_name, string msg, ...) {
         report (Reporter.EscapeCode.ANSI_MAGENTA, warning_name, msg, va_list ());
+    }
+
+    /**
+     * Prints a warning message with the specified warning name and message. (no printf-style arguments)
+     *
+     * @param warning_name The name of the warning.
+     * @param msg The warning message.
+     * @param ... Additional arguments for the message format.
+    */
+    public static void warning_puts (string warning_name, string msg) {
+        report_puts (Reporter.EscapeCode.ANSI_MAGENTA, warning_name, msg);
     }
 
     /**
@@ -182,6 +229,16 @@ public class Varallel.Reporter {
     }
 
     /**
+     * Print an informational message. (no printf-style arguments)
+     *
+     * @param info_name The name of the information.
+     * @param msg The message to be printed.
+    */
+    public static void info_puts (string info_name, string msg) {
+        report_puts (Reporter.EscapeCode.ANSI_CYAN, info_name, msg);
+    }
+
+    /**
      * Clears the standard error output and prints a message.
      *
      * @param msg The message to be printed.
@@ -189,18 +246,15 @@ public class Varallel.Reporter {
     */
     public static void clear_putserr (string msg, bool show_progress_bar = true) {
         if (show_progress_bar) {
-            stderr.printf ("\r%s\r%s",
+            printerr ("\r%s\r%s",
                 string.nfill (get_console_width (), ' '),
                 msg);
         } else {
-            stderr.puts (msg);
+            printerr ("%s", msg);
         }
     }
 
     /**
-     * @class LivePhotoConv.Reporter.ProgressBar
-     * @brief A progress bar class for displaying progress in the terminal.
-     *
      * The ProgressBar class provides a simple implementation of a progress bar that
      * can display the progress of operations in the terminal, including counts of
      * successes and failures.
@@ -209,11 +263,45 @@ public class Varallel.Reporter {
     public class ProgressBar {
 
         string title;
-        double percentage = 0.0;
-        int total_steps;
-        int current_step = 0;
-        char fill_char;
-        char empty_char;
+        char fill_char = '#';
+        char empty_char = '-';
+        Mutex mutex;
+        int _total_steps = 0;
+        int _current_step = 0;
+
+        /**
+         * The total number of steps for the progress bar.
+         */
+        public int total_steps {
+            get {
+                mutex.lock ();
+                var result = _total_steps;
+                mutex.unlock ();
+                return result;
+            }
+            set {
+                mutex.lock ();
+                _total_steps = value;
+                mutex.unlock ();
+            }
+        }
+
+        /**
+         * The current step number of the progress bar.
+         */
+        public int current_step {
+            get {
+                mutex.lock ();
+                var result = _current_step;
+                mutex.unlock ();
+                return result;
+            }
+            set {
+                mutex.lock ();
+                _current_step = value;
+                mutex.unlock ();
+            }
+        }
 
         /**
          * Constructs a ProgressBar object.
@@ -228,9 +316,10 @@ public class Varallel.Reporter {
                             char fill_char = '#',
                             char empty_char = '-') {
             this.title = title;
-            this.total_steps = total_steps;
+            this._total_steps = total_steps;
             this.fill_char = fill_char;
             this.empty_char = empty_char;
+            this.mutex = Mutex ();
         }
 
         /**
@@ -241,11 +330,13 @@ public class Varallel.Reporter {
          * @return The current step number.
          */
         public int update (uint success_count, uint failure_count) {
-            current_step += 1;
-            current_step = (current_step > total_steps) ? total_steps : current_step;
-            percentage = (double) current_step / total_steps * 100.0;
+            mutex.lock ();
+            _current_step += 1;
+            _current_step = (_current_step > _total_steps) ? _total_steps : _current_step;
             print_progress (success_count, failure_count);
-            return current_step;
+            var current = _current_step;
+            mutex.unlock ();
+            return current;
         }
 
         /**
@@ -255,6 +346,16 @@ public class Varallel.Reporter {
          * @param failure_count The number of failures.
          */
         public void print_progress (uint success_count, uint failure_count) {
+            mutex.lock ();
+            var current = _current_step;
+            var total = _total_steps;
+            mutex.unlock ();
+
+            if (total == 0) {
+                return;
+            }
+            var percentage = (double) current / total * 100.0;
+
             // The actual length of the prefix is the length of UNCOLORED prefix
             // ANSI escapecode should not be counted
             var prefix = "\rSuccess: %u Failure: %u ".printf (success_count, failure_count);
@@ -300,7 +401,7 @@ public class Varallel.Reporter {
             } else {
                 builder.append_printf (": %6.2f%%", percentage);
             }
-            stderr.puts (builder.str);
+            printerr ("%s", builder.str);
         }
     }
 }

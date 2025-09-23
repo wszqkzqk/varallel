@@ -17,13 +17,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
 */
 
-#pragma once
-
 #include <glib.h>
-
-#ifndef G_ALWAYS_INLINE // Be compatible with older versions of GLib
-#define G_ALWAYS_INLINE // empty
-#endif
 
 #if defined(_WIN32) // Windows
 #include <windows.h>
@@ -34,11 +28,7 @@
 #include <unistd.h>
 #endif
 
-#define get_console_width() get_console_width_inline()
-#define is_a_tty(fd) is_a_tty_inline(fd)
-
-G_ALWAYS_INLINE
-static inline int get_console_width_inline () {
+int get_console_width () {
 #if defined(_WIN32)
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     int columns;
@@ -62,8 +52,7 @@ static inline int get_console_width_inline () {
 #endif
 }
 
-G_ALWAYS_INLINE
-static inline gboolean is_a_tty_inline (int fd) {
+gboolean is_a_tty (int fd) {
 #if defined(_WIN32)
     return (gboolean) (_isatty (fd) != 0);
 #else // Unix
