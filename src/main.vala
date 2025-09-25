@@ -23,7 +23,6 @@
 public class Varallel.CLI {
     /* CLI is a class to handle command line arguments and options */
 
-    static bool show_help = false;
     static bool show_version = false;
     static int jobs = 0;
     static string? colsep_regex_str = null;
@@ -34,7 +33,6 @@ public class Varallel.CLI {
     static string? color_setting_str = null;
     static Regex colsep_regex = null;
     const OptionEntry[] options = {
-        { "help", 'h', OptionFlags.NONE, OptionArg.NONE, ref show_help, "Show help message", null },
         { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref show_version, "Display version number", null },
         { "jobs", 'j', OptionFlags.NONE, OptionArg.INT, ref jobs, "Run n jobs in parallel", "n" },
         { "colsep", 'r', OptionFlags.NONE, OptionArg.STRING, ref colsep_regex_str, "Regex to split the argument", "EXPRESSION" },
@@ -192,10 +190,7 @@ public class Varallel.CLI {
     }
 
     static int main (string[] original_args) {
-        // Compatibility for Windows and Unix
-        if (Intl.setlocale (LocaleCategory.ALL, ".UTF-8") == null){
-            Intl.setlocale ();
-        }
+        Intl.setlocale ();
 
 #if WINDOWS
         var args = Win32.get_command_line ();
@@ -203,10 +198,6 @@ public class Varallel.CLI {
         var args = strdupv (original_args);
 #endif
         var opt_context = new OptionContext ("command [:::|::::] [arguments]");
-        // DO NOT use the default help option provided by g_print
-        // g_print will force to convert character set to windows's code page
-        // which is imcompatible windows's bash, zsh, etc.
-        opt_context.set_help_enabled (false);
         opt_context.set_description ("Replacements in command:
   {}                          Input argument
   {.}                         Input argument without extension
@@ -223,7 +214,7 @@ For more information, or to report bugs, please visit:
             opt_context.parse_strv (ref args);
         } catch (OptionError e) {
             Reporter.error ("OptionError", e.message);
-            stderr.printf ("\n%s", opt_context.get_help (true, null));
+            printerr ("\n%s", opt_context.get_help (true, null));
             return 1;
         }
 
@@ -241,14 +232,9 @@ For more information, or to report bugs, please visit:
                 break;
             default:
                 Reporter.error ("OptionError", "invalid color setting");
-                stderr.printf ("\n%s", opt_context.get_help (true, null));
+                printerr ("\n%s", opt_context.get_help (true, null));
                 return 1;
             }
-        }
-
-        if (show_help) {
-            stderr.puts (opt_context.get_help (true, null));
-            return 0;
         }
 
         if (show_version) {
@@ -260,11 +246,11 @@ For more information, or to report bugs, please visit:
         GenericArray<GenericArray<string>> args_matrix;
         if ((!parse_nonoption_args (ref args, out command, out args_matrix))) {
             Reporter.error ("OptionError", "invalid command or args");
-            stderr.printf ("\n%s", opt_context.get_help (true, null));
+            printerr ("\n%s", opt_context.get_help (true, null));
             return 1;
         } else if (args_matrix == null || args_matrix.length == 0) {
             Reporter.error ("OptionError", "no input specified");
-            stderr.printf ("\n%s", opt_context.get_help (true, null));
+            printerr ("\n%s", opt_context.get_help (true, null));
             return 1;
         }
 
